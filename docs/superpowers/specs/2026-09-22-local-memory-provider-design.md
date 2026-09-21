@@ -213,7 +213,7 @@ mode. The remote memorax provider remains available by setting
 
 ### End-to-end (delivery verification)
 
-Real SQLite file + mocked Ark embedding. Simulates complete user operation
+Real SQLite file + real Ark embedding API (ARKCODINGPLAN_API_KEY env var, doubao-embedding-vision model at https://ark.cn-beijing.volces.com/api/coding/v3). Simulates complete user operation
 chains:
 
 | Scenario | Verification |
@@ -223,8 +223,8 @@ chains:
 | Hook auto-writeback | Simulated Hook writeback command → SQLite contains data, idempotency dedup works |
 | Hook auto-retrieve | Simulated Hook retrieve → context_blocks non-empty, prompt_fragments correct format |
 | Config switch | provider=local → write/search → switch to memorax → dispatch routes correctly, no cross-contamination |
-| Embedding enabled | embedding.json + mock Ark 200 → vector search path works end-to-end |
-| Embedding circuit-break | Mock Ark timeout 3× → keyword mode, no crash, LIKE path returns results |
+| Embedding enabled | Real Ark API → vector search path works end-to-end, 2048-dim vectors |
+| Embedding circuit-break | Real Ark with invalid endpoint/timeout → keyword mode, no crash, LIKE path returns results |
 | Restart recovery | Circuit-break → restart process → fresh health check |
 
 ### Unit tests
@@ -246,4 +246,7 @@ Per-module coverage in `test/provider/local/`:
 
 `test/provider/memorax/` remains untouched. `test/app/` composition-root
 tests gain one provider-dispatch case.
+
+
+
 
