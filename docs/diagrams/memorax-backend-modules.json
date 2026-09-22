@@ -1,0 +1,311 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "MemoraX Code Backend Module Map",
+    "output": "docs/diagrams/memorax-backend-modules.html",
+    "locale": "zh-CN",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    {
+      "id": "entrypoints",
+      "type": "backend",
+      "label": "entrypoints",
+      "sublabel": "CLI + binary facade",
+      "pos": [
+        40,
+        180
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "transport_http",
+      "type": "backend",
+      "label": "transport/http",
+      "sublabel": "HTTP intake",
+      "pos": [
+        40,
+        440
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "app",
+      "type": "backend",
+      "label": "app",
+      "sublabel": "composition root",
+      "pos": [
+        260,
+        280
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "memory",
+      "type": "backend",
+      "label": "memory",
+      "sublabel": "service kernels",
+      "pos": [
+        480,
+        180
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "provider_memorax",
+      "type": "cloud",
+      "label": "provider/memorax",
+      "sublabel": "outbound API",
+      "pos": [
+        700,
+        180
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "repository",
+      "type": "database",
+      "label": "repository",
+      "sublabel": "repo scope identity",
+      "pos": [
+        480,
+        400
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "trace",
+      "type": "database",
+      "label": "trace",
+      "sublabel": "local observability",
+      "pos": [
+        700,
+        400
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "lifecycle",
+      "type": "backend",
+      "label": "lifecycle",
+      "sublabel": "install + recovery",
+      "pos": [
+        480,
+        620
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "clients",
+      "type": "backend",
+      "label": "clients/*",
+      "sublabel": "native parsing",
+      "pos": [
+        260,
+        620
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "config",
+      "type": "backend",
+      "label": "config",
+      "sublabel": "settings + credentials",
+      "pos": [
+        40,
+        620
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "shared",
+      "type": "backend",
+      "label": "shared",
+      "sublabel": "cross-cutting utils",
+      "pos": [
+        260,
+        810
+      ],
+      "size": [
+        130,
+        50
+      ]
+    },
+    {
+      "id": "adapter_common",
+      "type": "backend",
+      "label": "adapter-common",
+      "sublabel": "shared runtime layer",
+      "pos": [
+        480,
+        810
+      ],
+      "size": [
+        130,
+        50
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Request plane",
+      "wraps": [
+        "entrypoints",
+        "transport_http",
+        "app",
+        "memory",
+        "provider_memorax"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "State and scope",
+      "wraps": [
+        "repository",
+        "trace"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "Control plane",
+      "wraps": [
+        "lifecycle",
+        "clients",
+        "config"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "Foundation",
+      "wraps": [
+        "shared",
+        "adapter_common"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "from": "entrypoints",
+      "to": "app",
+      "label": "compose"
+    },
+    {
+      "from": "transport_http",
+      "to": "app",
+      "label": "route intake"
+    },
+    {
+      "from": "app",
+      "to": "memory",
+      "label": "inject"
+    },
+    {
+      "from": "app",
+      "to": "lifecycle",
+      "label": "compose"
+    },
+    {
+      "from": "memory",
+      "to": "provider_memorax",
+      "label": "Search / Add"
+    },
+    {
+      "from": "memory",
+      "to": "repository",
+      "label": "scope",
+      "labelAt": [
+        545,
+        254
+      ]
+    },
+    {
+      "from": "memory",
+      "to": "trace",
+      "label": "events"
+    },
+    {
+      "from": "lifecycle",
+      "to": "clients",
+      "label": "deploy",
+      "labelAt": [
+        390,
+        694
+      ]
+    },
+    {
+      "from": "clients",
+      "to": "adapter_common",
+      "label": "shared runtime"
+    },
+    {
+      "from": "lifecycle",
+      "to": "adapter_common",
+      "label": "shared primitives",
+      "labelAt": [
+        545,
+        694
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Request Flow",
+      "items": [
+        "CLI and HTTP entrypoints compose the app root",
+        "Memory kernels call the MemoraX provider for Search and Add",
+        "Repository scope pins sessions to workspace identity"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "State Ownership",
+      "items": [
+        "Trace stores local client-qualified events only",
+        "Repository reads Git markers without executing Git",
+        "Provider adapter is the sole outbound network boundary"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Foundation Layer",
+      "items": [
+        "shared supplies cross-cutting utilities to all modules",
+        "adapter-common supplies shared primitives consumed by Backend and all 6 adapters",
+        "Neither foundation layer imports higher-level modules"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,310 @@
+<mxfile host="drawio-skill" agent="diagram-ir" version="3.0.0">
+  <diagram id="system" name="System">
+    <mxGraphModel dx="800" dy="600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="codex" value="Codex" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="codex" data-kind="client" data-properties="{&quot;tier&quot;:&quot;client&quot;,&quot;harness&quot;:&quot;codex&quot;}" data-source-properties="{&quot;tier&quot;:&quot;client&quot;,&quot;harness&quot;:&quot;codex&quot;}" data-source-label="Codex" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="60" y="80" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="claude" value="Claude Code" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="claude" data-kind="client" data-properties="{&quot;tier&quot;:&quot;client&quot;,&quot;harness&quot;:&quot;claude&quot;}" data-source-properties="{&quot;tier&quot;:&quot;client&quot;,&quot;harness&quot;:&quot;claude&quot;}" data-source-label="Claude Code" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="290" y="80" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dsh" value="DeepSeek Harness (DSH)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="dsh" data-kind="client" data-properties="{&quot;tier&quot;:&quot;client&quot;,&quot;harness&quot;:&quot;dsh&quot;}" data-source-properties="{&quot;tier&quot;:&quot;client&quot;,&quot;harness&quot;:&quot;dsh&quot;}" data-source-label="DeepSeek Harness (DSH)" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="520" y="80" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="opencode" value="OpenCode" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="opencode" data-kind="client" data-properties="{&quot;tier&quot;:&quot;client&quot;,&quot;harness&quot;:&quot;opencode&quot;}" data-source-properties="{&quot;tier&quot;:&quot;client&quot;,&quot;harness&quot;:&quot;opencode&quot;}" data-source-label="OpenCode" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="750" y="80" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="codebuddy" value="CodeBuddy CLI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="codebuddy" data-kind="client" data-properties="{&quot;tier&quot;:&quot;client&quot;,&quot;harness&quot;:&quot;codebuddy&quot;}" data-source-properties="{&quot;tier&quot;:&quot;client&quot;,&quot;harness&quot;:&quot;codebuddy&quot;}" data-source-label="CodeBuddy CLI" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="980" y="80" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="workbuddy" value="WorkBuddy" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="workbuddy" data-kind="client" data-properties="{&quot;tier&quot;:&quot;client&quot;,&quot;harness&quot;:&quot;codebuddy&quot;}" data-source-properties="{&quot;tier&quot;:&quot;client&quot;,&quot;harness&quot;:&quot;codebuddy&quot;}" data-source-label="WorkBuddy" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="1210" y="80" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="trae" value="Trae" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="trae" data-kind="client" data-properties="{&quot;tier&quot;:&quot;client&quot;,&quot;harness&quot;:&quot;trae&quot;}" data-source-properties="{&quot;tier&quot;:&quot;client&quot;,&quot;harness&quot;:&quot;trae&quot;}" data-source-label="Trae" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="1440" y="80" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="codex-adapter" value="Codex Adapter plugin / Hooks / canonical Skill" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="codex-adapter" data-kind="adapter" data-properties="{&quot;tier&quot;:&quot;adapter&quot;,&quot;pkg&quot;:&quot;packages/ts/memorax-code-codex-adapter&quot;}" data-source-properties="{&quot;tier&quot;:&quot;adapter&quot;,&quot;pkg&quot;:&quot;packages/ts/memorax-code-codex-adapter&quot;}" data-source-label="Codex Adapter&#10;plugin / Hooks / canonical Skill" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="60" y="230" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="claude-adapter" value="Claude Code Adapter plugin / Hooks / installer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="claude-adapter" data-kind="adapter" data-properties="{&quot;tier&quot;:&quot;adapter&quot;,&quot;pkg&quot;:&quot;packages/ts/memorax-code-claude-adapter&quot;}" data-source-properties="{&quot;tier&quot;:&quot;adapter&quot;,&quot;pkg&quot;:&quot;packages/ts/memorax-code-claude-adapter&quot;}" data-source-label="Claude Code Adapter&#10;plugin / Hooks / installer" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="290" y="230" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dsh-adapter" value="DSH Adapter Cordis Turn bridge / Profile lifecycle" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="dsh-adapter" data-kind="adapter" data-properties="{&quot;tier&quot;:&quot;adapter&quot;,&quot;pkg&quot;:&quot;packages/ts/memorax-code-dsh-adapter&quot;}" data-source-properties="{&quot;tier&quot;:&quot;adapter&quot;,&quot;pkg&quot;:&quot;packages/ts/memorax-code-dsh-adapter&quot;}" data-source-label="DSH Adapter&#10;Cordis Turn bridge / Profile lifecycle" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="520" y="230" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="opencode-adapter" value="OpenCode Adapter plugin / SDK record delivery" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="opencode-adapter" data-kind="adapter" data-properties="{&quot;tier&quot;:&quot;adapter&quot;,&quot;pkg&quot;:&quot;packages/ts/memorax-code-opencode-adapter&quot;}" data-source-properties="{&quot;tier&quot;:&quot;adapter&quot;,&quot;pkg&quot;:&quot;packages/ts/memorax-code-opencode-adapter&quot;}" data-source-label="OpenCode Adapter&#10;plugin / SDK record delivery" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="750" y="230" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="codebuddy-adapter" value="CodeBuddy Adapter Hooks / transcript bridge / shared by WorkBuddy" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="codebuddy-adapter" data-kind="adapter" data-properties="{&quot;tier&quot;:&quot;adapter&quot;,&quot;pkg&quot;:&quot;packages/ts/memorax-code-codebuddy-adapter&quot;}" data-source-properties="{&quot;tier&quot;:&quot;adapter&quot;,&quot;pkg&quot;:&quot;packages/ts/memorax-code-codebuddy-adapter&quot;}" data-source-label="CodeBuddy Adapter&#10;Hooks / transcript bridge / shared by WorkBuddy" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="980" y="230" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="trae-adapter" value="Trae Adapter Global Hooks / versioned runtime" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="trae-adapter" data-kind="adapter" data-properties="{&quot;tier&quot;:&quot;adapter&quot;,&quot;pkg&quot;:&quot;packages/ts/memorax-code-trae-adapter&quot;}" data-source-properties="{&quot;tier&quot;:&quot;adapter&quot;,&quot;pkg&quot;:&quot;packages/ts/memorax-code-trae-adapter&quot;}" data-source-label="Trae Adapter&#10;Global Hooks / versioned runtime" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="1210" y="230" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="adapter-common" value="adapter-common records, locks, Hook/Repo Memory helpers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="adapter-common" data-kind="library" data-properties="{&quot;tier&quot;:&quot;shared&quot;,&quot;pkg&quot;:&quot;packages/ts/memorax-code-adapter-common&quot;}" data-source-properties="{&quot;tier&quot;:&quot;shared&quot;,&quot;pkg&quot;:&quot;packages/ts/memorax-code-adapter-common&quot;}" data-source-label="adapter-common&#10;records, locks, Hook/Repo Memory helpers" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="1440" y="230" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="backend" value="Backend managed HTTP process" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="backend" data-kind="service" data-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;pkg&quot;:&quot;packages/ts/memorax-code-backend&quot;}" data-source-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;pkg&quot;:&quot;packages/ts/memorax-code-backend&quot;}" data-source-label="Backend&#10;managed HTTP process" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="60" y="380" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-cli" value="memorax-code CLI management / lifecycle" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="backend-cli" data-kind="command" data-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/entrypoints/backend-cli.ts&quot;}" data-source-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/entrypoints/backend-cli.ts&quot;}" data-source-label="memorax-code CLI&#10;management / lifecycle" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="290" y="380" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-server" value="backend-server HTTP composition root" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="backend-server" data-kind="service" data-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/app/backend-server.ts&quot;}" data-source-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/app/backend-server.ts&quot;}" data-source-label="backend-server&#10;HTTP composition root" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="520" y="380" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="memory-cli" value="memorax-cli manual memory CLI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="memory-cli" data-kind="command" data-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/memorax-cli.ts&quot;}" data-source-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/memorax-cli.ts&quot;}" data-source-label="memorax-cli&#10;manual memory CLI" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="750" y="380" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="http-transport" value="transport/http auth, helpers, Hook wire" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="http-transport" data-kind="module" data-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/transport/http&quot;}" data-source-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/transport/http&quot;}" data-source-label="transport/http&#10;auth, helpers, Hook wire" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="980" y="380" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="memory-service" value="memory/service command surface" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="memory-service" data-kind="module" data-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/memory/service.ts&quot;}" data-source-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/memory/service.ts&quot;}" data-source-label="memory/service&#10;command surface" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="1210" y="380" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="harness-runtime" value="HarnessMemoryRuntime Turn-start / completion" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="harness-runtime" data-kind="module" data-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/memory/harness-runtime.ts&quot;}" data-source-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/memory/harness-runtime.ts&quot;}" data-source-label="HarnessMemoryRuntime&#10;Turn-start / completion" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="1440" y="380" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="turn-coordinator" value="MemoryTurnCoordinator correlate / validate Turns" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="turn-coordinator" data-kind="module" data-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/memory/turn-coordinator.ts&quot;}" data-source-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/memory/turn-coordinator.ts&quot;}" data-source-label="MemoryTurnCoordinator&#10;correlate / validate Turns" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="60" y="530" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="writeback" value="Automatic Writeback buffer / chunk / redact" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="writeback" data-kind="module" data-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/memory&quot;}" data-source-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/memory&quot;}" data-source-label="Automatic Writeback&#10;buffer / chunk / redact" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="290" y="530" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="repo-session" value="RepositorySessionRuntime scope pin / validate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="repo-session" data-kind="module" data-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/memory/repository-session.ts&quot;}" data-source-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/memory/repository-session.ts&quot;}" data-source-label="RepositorySessionRuntime&#10;scope pin / validate" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="520" y="530" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="repo-scope" value="repository read-only Git identity" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="repo-scope" data-kind="module" data-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/repository&quot;}" data-source-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/repository&quot;}" data-source-label="repository&#10;read-only Git identity" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="750" y="530" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="provider-memorax" value="provider/memorax Search / Add HTTP transport" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="provider-memorax" data-kind="module" data-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/provider/memorax&quot;}" data-source-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/provider/memorax&quot;}" data-source-label="provider/memorax&#10;Search / Add HTTP transport" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="980" y="530" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="trace-store" value="trace client-qualified JSONL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="trace-store" data-kind="module" data-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/trace&quot;}" data-source-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/trace&quot;}" data-source-label="trace&#10;client-qualified JSONL" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="1210" y="530" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="observability" value="observability MemoryObservabilityHook" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="observability" data-kind="module" data-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/memory/observability.ts&quot;}" data-source-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/memory/observability.ts&quot;}" data-source-label="observability&#10;MemoryObservabilityHook" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="1440" y="530" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="lifecycle" value="lifecycle participants / locks / scheduling" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="lifecycle" data-kind="module" data-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/lifecycle&quot;}" data-source-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/lifecycle&quot;}" data-source-label="lifecycle&#10;participants / locks / scheduling" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="60" y="680" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="personal-memory" value="personal-memory User Profile CRUD" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="personal-memory" data-kind="module" data-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/personal-memory&quot;}" data-source-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/personal-memory&quot;}" data-source-label="personal-memory&#10;User Profile CRUD" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="290" y="680" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="repo-memory" value="repo-memory collect / delta / validate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="repo-memory" data-kind="module" data-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/repo-memory&quot;}" data-source-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/repo-memory&quot;}" data-source-label="repo-memory&#10;collect / delta / validate" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="520" y="680" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="config" value="config env / settings interpretation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="config" data-kind="module" data-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/config&quot;}" data-source-properties="{&quot;tier&quot;:&quot;backend&quot;,&quot;module&quot;:&quot;src/config&quot;}" data-source-label="config&#10;env / settings interpretation" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="750" y="680" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="npm-package" value="npm package wrappers / setup / update" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="npm-package" data-kind="package" data-properties="{&quot;tier&quot;:&quot;distribution&quot;,&quot;pkg&quot;:&quot;packages/npm/memorax-code&quot;}" data-source-properties="{&quot;tier&quot;:&quot;distribution&quot;,&quot;pkg&quot;:&quot;packages/npm/memorax-code&quot;}" data-source-label="npm package&#10;wrappers / setup / update" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="980" y="680" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="npm-staging" value="staging tree build / materialize / gates" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="npm-staging" data-kind="package" data-properties="{&quot;tier&quot;:&quot;distribution&quot;,&quot;module&quot;:&quot;scripts&quot;}" data-source-properties="{&quot;tier&quot;:&quot;distribution&quot;,&quot;module&quot;:&quot;scripts&quot;}" data-source-label="staging tree&#10;build / materialize / gates" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="1210" y="680" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="npm-artifact" value="installed CLI artifact" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="npm-artifact" data-kind="package" data-properties="{&quot;tier&quot;:&quot;distribution&quot;}" data-source-properties="{&quot;tier&quot;:&quot;distribution&quot;}" data-source-label="installed CLI artifact" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="1440" y="680" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="memorax-api" value="MemoraX API Search / Add" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1" data-model-id="memorax-api" data-kind="external" data-properties="{&quot;tier&quot;:&quot;external&quot;}" data-source-properties="{&quot;tier&quot;:&quot;external&quot;}" data-source-label="MemoraX API&#10;Search / Add" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="60" y="830" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="local-trace" value="local trace JSONL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="local-trace" data-kind="storage" data-properties="{&quot;tier&quot;:&quot;storage&quot;}" data-source-properties="{&quot;tier&quot;:&quot;storage&quot;}" data-source-label="local trace JSONL" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="290" y="830" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="local-diagnostics" value="content-free diagnostic records" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="local-diagnostics" data-kind="storage" data-properties="{&quot;tier&quot;:&quot;storage&quot;}" data-source-properties="{&quot;tier&quot;:&quot;storage&quot;}" data-source-label="content-free diagnostic records" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="520" y="830" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="repo-memory-dir" value=".repo_memory/ repository-local guidance" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="repo-memory-dir" data-kind="storage" data-properties="{&quot;tier&quot;:&quot;storage&quot;}" data-source-properties="{&quot;tier&quot;:&quot;storage&quot;}" data-source-label=".repo_memory/&#10;repository-local guidance" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="750" y="830" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="user-profile-dir" value=".repo_memory/user-profile/ preferences.md" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1" data-model-id="user-profile-dir" data-kind="storage" data-properties="{&quot;tier&quot;:&quot;storage&quot;}" data-source-properties="{&quot;tier&quot;:&quot;storage&quot;}" data-source-label=".repo_memory/user-profile/&#10;preferences.md" data-provenance="{&quot;path&quot;:&quot;H:\\GitClone\\memorax-code-fix\\docs\\architecture-ir.json&quot;}">
+          <mxGeometry x="980" y="830" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-0" value="native Hook events" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="codex" target="codex-adapter" data-model-id="codex-to-adapter" data-kind="sync" data-properties="{}" data-source-properties="{}" data-source-label="native Hook events">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-1" value="native Hook events" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="claude" target="claude-adapter" data-model-id="claude-to-adapter" data-kind="sync" data-properties="{}" data-source-properties="{}" data-source-label="native Hook events">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-2" value="Cordis Turn events" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="dsh" target="dsh-adapter" data-model-id="dsh-to-adapter" data-kind="sync" data-properties="{}" data-source-properties="{}" data-source-label="Cordis Turn events">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-3" value="plugin / SDK events" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="opencode" target="opencode-adapter" data-model-id="opencode-to-adapter" data-kind="sync" data-properties="{}" data-source-properties="{}" data-source-label="plugin / SDK events">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-4" value="Hook / transcript" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="codebuddy" target="codebuddy-adapter" data-model-id="codebuddy-to-adapter" data-kind="sync" data-properties="{}" data-source-properties="{}" data-source-label="Hook / transcript">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-5" value="Hook / transcript" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="workbuddy" target="codebuddy-adapter" data-model-id="workbuddy-to-adapter" data-kind="sync" data-properties="{}" data-source-properties="{}" data-source-label="Hook / transcript">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-6" value="Global Hook events" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="trae" target="trae-adapter" data-model-id="trae-to-adapter" data-kind="sync" data-properties="{}" data-source-properties="{}" data-source-label="Global Hook events">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-7" value="imports" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="codex-adapter" target="adapter-common" data-model-id="codex-adapter-common" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="imports">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-8" value="imports" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="claude-adapter" target="adapter-common" data-model-id="claude-adapter-common" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="imports">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-9" value="imports" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="dsh-adapter" target="adapter-common" data-model-id="dsh-adapter-common" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="imports">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-10" value="imports" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="opencode-adapter" target="adapter-common" data-model-id="opencode-adapter-common" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="imports">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-11" value="imports" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="codebuddy-adapter" target="adapter-common" data-model-id="codebuddy-adapter-common" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="imports">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-12" value="imports" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="trae-adapter" target="adapter-common" data-model-id="trae-adapter-common" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="imports">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-13" value="imports" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="backend" target="adapter-common" data-model-id="backend-common" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="imports">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-14" value="versioned Hook HTTP" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="codex-adapter" target="backend" data-model-id="codex-adapter-http" data-kind="sync" data-properties="{&quot;protocol&quot;:&quot;HTTP loopback&quot;}" data-source-properties="{&quot;protocol&quot;:&quot;HTTP loopback&quot;}" data-source-label="versioned Hook HTTP">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-15" value="versioned Hook HTTP" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="claude-adapter" target="backend" data-model-id="claude-adapter-http" data-kind="sync" data-properties="{&quot;protocol&quot;:&quot;HTTP loopback&quot;}" data-source-properties="{&quot;protocol&quot;:&quot;HTTP loopback&quot;}" data-source-label="versioned Hook HTTP">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-16" value="versioned plugin HTTP" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="dsh-adapter" target="backend" data-model-id="dsh-adapter-http" data-kind="sync" data-properties="{&quot;protocol&quot;:&quot;HTTP loopback&quot;}" data-source-properties="{&quot;protocol&quot;:&quot;HTTP loopback&quot;}" data-source-label="versioned plugin HTTP">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-17" value="versioned plugin HTTP" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="opencode-adapter" target="backend" data-model-id="opencode-adapter-http" data-kind="sync" data-properties="{&quot;protocol&quot;:&quot;HTTP loopback&quot;}" data-source-properties="{&quot;protocol&quot;:&quot;HTTP loopback&quot;}" data-source-label="versioned plugin HTTP">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-18" value="versioned Hook HTTP" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="codebuddy-adapter" target="backend" data-model-id="codebuddy-adapter-http" data-kind="sync" data-properties="{&quot;protocol&quot;:&quot;HTTP loopback&quot;}" data-source-properties="{&quot;protocol&quot;:&quot;HTTP loopback&quot;}" data-source-label="versioned Hook HTTP">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-19" value="versioned Hook HTTP" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="trae-adapter" target="backend" data-model-id="trae-adapter-http" data-kind="sync" data-properties="{&quot;protocol&quot;:&quot;HTTP loopback&quot;}" data-source-properties="{&quot;protocol&quot;:&quot;HTTP loopback&quot;}" data-source-label="versioned Hook HTTP">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-20" value="memorax-cli search" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="codex" target="memory-cli" data-model-id="codex-adapter-skill" data-kind="sync" data-properties="{&quot;path&quot;:&quot;shared Skill&quot;}" data-source-properties="{&quot;path&quot;:&quot;shared Skill&quot;}" data-source-label="memorax-cli search">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-21" value="memorax-cli search" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="claude" target="memory-cli" data-model-id="claude-adapter-skill" data-kind="sync" data-properties="{&quot;path&quot;:&quot;shared Skill&quot;}" data-source-properties="{&quot;path&quot;:&quot;shared Skill&quot;}" data-source-label="memorax-cli search">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-22" value="memorax-cli search" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="dsh" target="memory-cli" data-model-id="dsh-adapter-skill" data-kind="sync" data-properties="{&quot;path&quot;:&quot;shared Skill&quot;}" data-source-properties="{&quot;path&quot;:&quot;shared Skill&quot;}" data-source-label="memorax-cli search">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-23" value="memorax-cli search" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="opencode" target="memory-cli" data-model-id="opencode-adapter-skill" data-kind="sync" data-properties="{&quot;path&quot;:&quot;shared Skill&quot;}" data-source-properties="{&quot;path&quot;:&quot;shared Skill&quot;}" data-source-label="memorax-cli search">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-24" value="memorax-cli search" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="codebuddy" target="memory-cli" data-model-id="codebuddy-adapter-skill" data-kind="sync" data-properties="{&quot;path&quot;:&quot;shared Skill&quot;}" data-source-properties="{&quot;path&quot;:&quot;shared Skill&quot;}" data-source-label="memorax-cli search">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-25" value="memorax-cli search" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="workbuddy" target="memory-cli" data-model-id="workbuddy-adapter-skill" data-kind="sync" data-properties="{&quot;path&quot;:&quot;shared Skill&quot;}" data-source-properties="{&quot;path&quot;:&quot;shared Skill&quot;}" data-source-label="memorax-cli search">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-26" value="memorax-cli search" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="trae" target="memory-cli" data-model-id="trae-adapter-skill" data-kind="sync" data-properties="{&quot;path&quot;:&quot;shared Skill&quot;}" data-source-properties="{&quot;path&quot;:&quot;shared Skill&quot;}" data-source-label="memorax-cli search">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-27" value="dispatch" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="backend-cli" target="lifecycle" data-model-id="backend-cli-lifecycle" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="dispatch">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-28" value="start / stop / status" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="lifecycle" target="backend" data-model-id="lifecycle-backend" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="start / stop / status">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-29" value="participants" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="lifecycle" target="adapter-common" data-model-id="lifecycle-adapters" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="participants">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-30" value="compose routes" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="backend" target="http-transport" data-model-id="backend-server-http" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="compose routes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-31" value="compose memory" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="backend" target="memory-service" data-model-id="backend-server-memory" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="compose memory">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-32" value="wire sinks" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="backend" target="observability" data-model-id="backend-server-observability" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="wire sinks">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-33" value="dispatch" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="http-transport" target="memory-service" data-model-id="http-to-memory" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="dispatch">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-34" value="compose" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="memory-service" target="harness-runtime" data-model-id="memory-to-harness" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="compose">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-35" value="register / validate" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="harness-runtime" target="turn-coordinator" data-model-id="harness-to-coordinator" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="register / validate">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-36" value="resolve scope" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="harness-runtime" target="repo-session" data-model-id="harness-to-scope" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="resolve scope">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-37" value="enqueue completion" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="harness-runtime" target="writeback" data-model-id="harness-to-writeback" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="enqueue completion">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-38" value="record turn-start" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="harness-runtime" target="trace-store" data-model-id="harness-to-trace" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="record turn-start">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-39" value="Add request" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="writeback" target="provider-memorax" data-model-id="writeback-to-provider" data-kind="sync" data-properties="{}" data-source-properties="{}" data-source-label="Add request">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-40" value="emit event" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="writeback" target="observability" data-model-id="writeback-to-trace" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="emit event">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-41" value="read-only identity" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="repo-session" target="repo-scope" data-model-id="repo-session-to-git" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="read-only identity">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-42" value="resolve" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="memory-cli" target="repo-scope" data-model-id="memory-cli-to-scope" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="resolve">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-43" value="scoped query" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="memory-cli" target="provider-memorax" data-model-id="memory-cli-to-provider" data-kind="sync" data-properties="{}" data-source-properties="{}" data-source-label="scoped query">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-44" value="trace" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="memory-cli" target="trace-store" data-model-id="memory-cli-to-trace" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="trace">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-45" value="failure record" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="memory-cli" target="local-diagnostics" data-model-id="memory-cli-to-diag" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="failure record">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-46" value="HTTPS Search/Add" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="provider-memorax" target="memorax-api" data-model-id="provider-to-api" data-kind="sync" data-properties="{}" data-source-properties="{}" data-source-label="HTTPS Search/Add">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-47" value="JSONL append" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="trace-store" target="local-trace" data-model-id="trace-to-local" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="JSONL append">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-48" value="trace" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="lifecycle" target="trace-store" data-model-id="lifecycle-to-trace" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="trace">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-49" value="bundle build" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="memory-service" target="repo-memory" data-model-id="memory-to-repo-memory" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="bundle build">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-50" value="write bundle" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="repo-memory" target="repo-memory-dir" data-model-id="repo-memory-to-dir" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="write bundle">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-51" value="atomic write" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="personal-memory" target="user-profile-dir" data-model-id="personal-to-profile" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="atomic write">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-52" value="assemble" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="npm-package" target="npm-staging" data-model-id="npm-to-build" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="assemble">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-53" value="pack" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="npm-staging" target="npm-artifact" data-model-id="build-to-artifact" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="pack">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-54" value="invoke CLI" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="npm-artifact" target="lifecycle" data-model-id="artifact-to-lifecycle" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="invoke CLI">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-55" value="invoke CLI" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="npm-artifact" target="memory-cli" data-model-id="artifact-to-memory-cli" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="invoke CLI">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-56" value="profile injection" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="harness-runtime" target="personal-memory" data-model-id="harness-to-personal" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="profile injection">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-57" value="read guidance" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="harness-runtime" target="repo-memory-dir" data-model-id="harness-to-repo-mem-dir" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="read guidance">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-58" value="read preferences" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="harness-runtime" target="user-profile-dir" data-model-id="harness-to-profile-dir" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="read preferences">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-system-59" value="sink" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="observability" target="trace-store" data-model-id="observability-to-trace" data-kind="depends" data-properties="{}" data-source-properties="{}" data-source-label="sink">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,326 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "MemoraX Code System Architecture",
+    "output": "docs/diagrams/memorax-system-architecture.html",
+    "locale": "zh-CN",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    {
+      "id": "clients",
+      "type": "external",
+      "label": "Client Runtimes",
+      "sublabel": "7 coding agents",
+      "pos": [
+        40,
+        260
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "adapters",
+      "type": "frontend",
+      "label": "Client Adapters",
+      "sublabel": "6 deployment adapters",
+      "pos": [
+        250,
+        260
+      ],
+      "size": [
+        140,
+        60
+      ]
+    },
+    {
+      "id": "adapter_common",
+      "type": "backend",
+      "label": "adapter-common",
+      "sublabel": "shared runtime source",
+      "pos": [
+        250,
+        520
+      ],
+      "size": [
+        140,
+        60
+      ]
+    },
+    {
+      "id": "backend_service",
+      "type": "backend",
+      "label": "Backend HTTP Service",
+      "sublabel": "managed process",
+      "pos": [
+        520,
+        130
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "memory_cli",
+      "type": "backend",
+      "label": "memorax-cli",
+      "sublabel": "explicit memory commands",
+      "pos": [
+        520,
+        340
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "memorax_api",
+      "type": "cloud",
+      "label": "MemoraX API",
+      "sublabel": "remote memory service",
+      "pos": [
+        820,
+        130
+      ],
+      "size": [
+        140,
+        60
+      ]
+    },
+    {
+      "id": "local_state",
+      "type": "database",
+      "label": "Local Runtime State",
+      "sublabel": "trace, lifecycle records",
+      "pos": [
+        820,
+        420
+      ],
+      "size": [
+        140,
+        60
+      ]
+    },
+    {
+      "id": "npm_pkg",
+      "type": "external",
+      "label": "npm Package",
+      "sublabel": "wrappers + manifest",
+      "pos": [
+        40,
+        700
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "build_scripts",
+      "type": "external",
+      "label": "Build Scripts",
+      "sublabel": "stage + materialize",
+      "pos": [
+        250,
+        700
+      ],
+      "size": [
+        140,
+        60
+      ]
+    },
+    {
+      "id": "npm_artifact",
+      "type": "external",
+      "label": "Assembled Artifact",
+      "sublabel": "installed CLI package",
+      "pos": [
+        520,
+        700
+      ],
+      "size": [
+        150,
+        60
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Client-owned runtimes",
+      "wraps": [
+        "clients"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "Client integrations",
+      "wraps": [
+        "adapters",
+        "adapter_common"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "Backend package",
+      "wraps": [
+        "backend_service",
+        "memory_cli",
+        "local_state"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "Packaging",
+      "wraps": [
+        "npm_pkg",
+        "build_scripts",
+        "npm_artifact"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "from": "clients",
+      "to": "adapters",
+      "label": "native events"
+    },
+    {
+      "from": "adapters",
+      "to": "backend_service",
+      "label": "Hook HTTP",
+      "labelAt": [
+        420,
+        190
+      ]
+    },
+    {
+      "from": "adapters",
+      "to": "adapter_common",
+      "label": "shared imports",
+      "labelAt": [
+        320,
+        334
+      ]
+    },
+    {
+      "from": "backend_service",
+      "to": "adapter_common",
+      "label": "shared source",
+      "variant": "dashed",
+      "labelAt": [
+        420,
+        350
+      ]
+    },
+    {
+      "from": "backend_service",
+      "to": "memorax_api",
+      "label": "automatic Search/Add",
+      "labelAt": [
+        710,
+        204
+      ],
+      "route": "straight"
+    },
+    {
+      "from": "memory_cli",
+      "to": "memorax_api",
+      "label": "explicit Search/Add",
+      "labelAt": [
+        790,
+        340
+      ],
+      "fromSide": "right",
+      "toSide": "bottom",
+      "via": [
+        [
+          790,
+          370
+        ],
+        [
+          790,
+          230
+        ],
+        [
+          890,
+          230
+        ]
+      ]
+    },
+    {
+      "from": "memory_cli",
+      "to": "local_state",
+      "label": "trace + records",
+      "labelAt": [
+        750,
+        420
+      ],
+      "fromSide": "right",
+      "toSide": "left",
+      "via": [
+        [
+          750,
+          370
+        ],
+        [
+          750,
+          450
+        ]
+      ]
+    },
+    {
+      "from": "npm_pkg",
+      "to": "build_scripts",
+      "label": "build"
+    },
+    {
+      "from": "build_scripts",
+      "to": "npm_artifact",
+      "label": "assemble"
+    },
+    {
+      "from": "npm_artifact",
+      "to": "memory_cli",
+      "label": "lifecycle start",
+      "labelAt": [
+        600,
+        590
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Authority Model",
+      "items": [
+        "Clients own models, credentials, and native transcripts",
+        "Adapters bridge events to Backend without interpreting native content",
+        "Backend owns memory operations and repository scope"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Data Boundaries",
+      "items": [
+        "Raw transcripts stay local; only normalized Search/Add crosses the provider boundary",
+        "Trace and lifecycle records remain local-only",
+        "Backend stays on loopback by default"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Packaging Flow",
+      "items": [
+        "npm sources and adapters feed the build scripts",
+        "Build stages and materializes into the installed artifact",
+        "Artifact starts the Backend and invokes memory commands"
+      ]
+    }
+  ]
+}

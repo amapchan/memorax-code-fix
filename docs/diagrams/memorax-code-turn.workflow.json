@@ -1,0 +1,93 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "MemoraX Code Turn 业务流",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "turn-start",
+        "label": "Turn 开始",
+        "focus": ["codex_user", "hook_prompt", "http_ingress", "codex_runtime"],
+        "note": "Hook 触发时先保证 Backend 可用，再进入带鉴权的 HTTP 入口。"
+      },
+      {
+        "id": "turn-writeback",
+        "label": "Turn 写回",
+        "focus": ["codex_stop", "hook_stop", "turn_coordinator", "writeback_buffer", "memorax_api"],
+        "note": "Stop Hook 读取 Rollout 后由协调器校验并缓冲写回。"
+      }
+    ]
+  },
+  "lanes": [
+    { "id": "codex", "label": "Codex" },
+    { "id": "hooks", "label": "Hook Runtime" },
+    { "id": "backend", "label": "Backend" },
+    { "id": "storage", "label": "Local Evidence" },
+    { "id": "external", "label": "MemoraX" }
+  ],
+  "mainPath": [
+    "codex_user",
+    "hook_prompt",
+    "http_ingress",
+    "codex_runtime",
+    "turn_coordinator",
+    "writeback_buffer",
+    "memorax_api"
+  ],
+  "nodes": [
+    { "id": "codex_user", "lane": "codex", "col": 0, "type": "frontend", "label": "用户 Turn", "sublabel": "UserPromptSubmit" },
+    { "id": "codex_stop", "lane": "codex", "col": 2, "type": "frontend", "label": "回复完成", "sublabel": "Stop" },
+    { "id": "hook_prompt", "lane": "hooks", "col": 1, "width": 108, "type": "backend", "label": "Turn Start Hook", "sublabel": "ensure backend" },
+    { "id": "hook_stop", "lane": "hooks", "col": 3, "type": "backend", "label": "Writeback Hook", "sublabel": "post stop event" },
+    { "id": "http_ingress", "lane": "backend", "col": 2, "type": "backend", "label": "HTTP 入口", "sublabel": "token auth" },
+    { "id": "codex_runtime", "lane": "backend", "col": 3, "type": "backend", "label": "Codex Runtime", "sublabel": "client-qualified" },
+    { "id": "turn_coordinator", "lane": "backend", "col": 4, "type": "backend", "label": "Turn 协调器", "sublabel": "scope + dedupe" },
+    { "id": "writeback_buffer", "lane": "backend", "col": 5, "type": "messagebus", "label": "写回缓冲", "sublabel": "batch turns" },
+    { "id": "rollout_reader", "lane": "storage", "col": 4, "type": "database", "label": "Codex Rollout", "sublabel": "user + assistant" },
+    { "id": "trace_store", "lane": "storage", "col": 2, "type": "database", "label": "Trace Store", "sublabel": "turn events" },
+    { "id": "memorax_api", "lane": "external", "col": 5, "type": "external", "label": "MemoraX API", "sublabel": "memory endpoint" }
+  ],
+  "edges": [
+    { "from": "codex_user", "to": "hook_prompt", "label": "提交 Prompt", "role": "main", "variant": "emphasis" },
+    { "from": "hook_prompt", "to": "http_ingress", "label": "校验后转发", "role": "main", "variant": "emphasis" },
+    { "from": "codex_stop", "to": "hook_stop", "label": "Stop 事件", "variant": "emphasis" },
+    { "from": "hook_stop", "to": "http_ingress", "label": "Turn 完成事件", "variant": "emphasis" },
+    { "from": "http_ingress", "to": "codex_runtime", "label": "路由 Codex Turn", "role": "main", "variant": "emphasis" },
+    { "from": "codex_runtime", "to": "turn_coordinator", "label": "Turn 元数据", "role": "main", "variant": "emphasis" },
+    { "from": "turn_coordinator", "to": "rollout_reader", "label": "读取 Rollout", "variant": "dashed" },
+    { "from": "turn_coordinator", "to": "writeback_buffer", "label": "接受写回", "role": "main", "variant": "emphasis" },
+    { "from": "writeback_buffer", "to": "memorax_api", "label": "批量写回", "role": "main", "variant": "emphasis" },
+    { "from": "codex_runtime", "to": "trace_store", "label": "记录 Turn Trace", "variant": "dashed" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "入口契约",
+      "items": [
+        "Hook 命令按客户端和版本限定",
+        "HTTP 入口先校验 Token，再路由 Memory Hook",
+        "本地 Backend 默认绑定 loopback"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Turn 生命周期",
+      "items": [
+        "UserPromptSubmit 建立 Turn 元数据",
+        "Stop Hook 使用 Codex Rollout 作为内容权威",
+        "协调器校验 Session、Turn 和 Repository scope"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "写回路径",
+      "items": [
+        "自动写回先进入会话缓冲",
+        "缓冲按 turn、字符和空闲时间触发 flush",
+        "最终只向 MemoraX API 发送批准过的记忆负载"
+      ]
+    }
+  ]
+}

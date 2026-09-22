@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "MemoraX Code Memory 数据流",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "viewBox": [1080, 520],
+    "views": [
+      {
+        "id": "writeback-path",
+        "label": "写回链路",
+        "focus": ["codex_hook", "codex_rollout", "turn_coordinator", "writeback_buffer", "memorax_memory"],
+        "note": "本地 Rollout 是内容权威，写入前经过 scope 和缓冲。"
+      },
+      {
+        "id": "trace-path",
+        "label": "Trace 链路",
+        "focus": ["codex_hook", "trace_store", "memory_service"],
+        "note": "Trace 只保存本地运行证据，不作为内容来源。"
+      }
+    ]
+  },
+  "stages": [
+    { "label": "Client" },
+    { "label": "Ingress" },
+    { "label": "Process" },
+    { "label": "Store" },
+    { "label": "MemoraX" }
+  ],
+  "nodes": [
+    { "id": "codex_hook", "type": "backend", "label": "Codex Hook", "sublabel": "client event", "stage": 0, "row": 0 },
+    { "id": "repository_scope", "type": "security", "label": "Repository Scope", "sublabel": "read-only resolve", "stage": 1, "row": 1 },
+    { "id": "http_ingress", "type": "backend", "label": "HTTP Ingress", "sublabel": "token auth", "stage": 1, "row": 0 },
+    { "id": "codex_rollout", "type": "database", "label": "Codex Rollout", "sublabel": "native session", "stage": 2, "row": 0 },
+    { "id": "turn_coordinator", "type": "backend", "label": "Turn Coordinator", "sublabel": "identity + scope", "stage": 2, "row": 1 },
+    { "id": "trace_store", "type": "database", "label": "Trace Store", "sublabel": "turn events", "stage": 3, "row": 0 },
+    { "id": "writeback_buffer", "type": "messagebus", "label": "Writeback Buffer", "sublabel": "batch by session", "stage": 3, "row": 1 },
+    { "id": "memory_service", "type": "backend", "label": "Memory Service", "sublabel": "runtime facade", "stage": 4, "row": 0 },
+    { "id": "memorax_memory", "type": "external", "label": "MemoraX Memory", "sublabel": "query + add", "stage": 4, "row": 1 }
+  ],
+  "flows": [
+    { "id": "client-event", "from": "codex_hook", "to": "http_ingress", "label": "hook payload", "classification": "session + turn ids", "variant": "emphasis" },
+    { "id": "scope-resolve", "from": "http_ingress", "to": "repository_scope", "label": "workspace root", "classification": "read-only", "variant": "security", "labelDy": 24 },
+    { "id": "validated-scope", "from": "repository_scope", "to": "turn_coordinator", "label": "repository scope", "classification": "validated", "variant": "security" },
+    { "id": "native-turn", "from": "codex_rollout", "to": "turn_coordinator", "label": "user + assistant", "classification": "completed turn", "variant": "emphasis", "labelDy": 24 },
+    { "id": "turn-trace", "from": "turn_coordinator", "to": "trace_store", "label": "turn trace", "classification": "local evidence", "variant": "dashed" },
+    { "id": "buffered-turn", "from": "turn_coordinator", "to": "writeback_buffer", "label": "writeback decision", "classification": "accepted turn", "variant": "emphasis", "route": "straight", "labelAt": [586, 330] },
+    { "id": "flush-payload", "from": "writeback_buffer", "to": "memory_service", "label": "batched messages", "classification": "queued", "variant": "emphasis" },
+    { "id": "memory-write", "from": "memory_service", "to": "memorax_memory", "label": "add memory", "classification": "approved payload", "variant": "emphasis", "labelDy": 24 },
+    { "id": "trace-read", "from": "trace_store", "to": "memory_service", "label": "operational trace", "classification": "diagnostics", "variant": "dashed", "route": "straight", "labelDy": -24 }
+  ],
+  "cards": [
+    {
+      "dot": "rose",
+      "title": "Scope Boundary",
+      "items": [
+        "Repository identity 只读解析，不执行 Git",
+        "Session 先绑定 workspace，再绑定 repository scope",
+        "Scope 不匹配时写回显式拒绝，而不是静默换源"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Content Authority",
+      "items": [
+        "Codex Rollout 提供用户输入和助手回复",
+        "Trace 是本地运行证据，不是记忆内容来源",
+        "自动写回只消费匹配 Turn 的内容"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Egress",
+      "items": [
+        "写回按 Session 缓冲并批量提交",
+        "Memory Service 是本地运行时门面",
+        "MemoraX 只收到文档化的 query/add/writeback 负载"
+      ]
+    }
+  ]
+}

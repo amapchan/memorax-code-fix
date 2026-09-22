@@ -1,0 +1,311 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "MemoraX Code Backend 模块图谱",
+    "output": "docs/diagrams/memorax-backend-modules-zh.html",
+    "locale": "zh-CN",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    {
+      "id": "entrypoints",
+      "type": "backend",
+      "label": "entrypoints",
+      "sublabel": "CLI + 二进制门面",
+      "pos": [
+        40,
+        180
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "transport_http",
+      "type": "backend",
+      "label": "transport/http",
+      "sublabel": "HTTP 接入",
+      "pos": [
+        40,
+        440
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "app",
+      "type": "backend",
+      "label": "app",
+      "sublabel": "组合根",
+      "pos": [
+        260,
+        280
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "memory",
+      "type": "backend",
+      "label": "memory",
+      "sublabel": "服务内核",
+      "pos": [
+        480,
+        180
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "provider_memorax",
+      "type": "cloud",
+      "label": "provider/memorax",
+      "sublabel": "出站 API",
+      "pos": [
+        700,
+        180
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "repository",
+      "type": "database",
+      "label": "repository",
+      "sublabel": "仓库作用域身份",
+      "pos": [
+        480,
+        400
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "trace",
+      "type": "database",
+      "label": "trace",
+      "sublabel": "本地可观测性",
+      "pos": [
+        700,
+        400
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "lifecycle",
+      "type": "backend",
+      "label": "lifecycle",
+      "sublabel": "安装 + 恢复",
+      "pos": [
+        480,
+        620
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "clients",
+      "type": "backend",
+      "label": "clients/*",
+      "sublabel": "原生解析",
+      "pos": [
+        260,
+        620
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "config",
+      "type": "backend",
+      "label": "config",
+      "sublabel": "配置 + 凭据",
+      "pos": [
+        40,
+        620
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "shared",
+      "type": "backend",
+      "label": "shared",
+      "sublabel": "横切工具集",
+      "pos": [
+        260,
+        810
+      ],
+      "size": [
+        130,
+        50
+      ]
+    },
+    {
+      "id": "adapter_common",
+      "type": "backend",
+      "label": "adapter-common",
+      "sublabel": "共享运行时层",
+      "pos": [
+        480,
+        810
+      ],
+      "size": [
+        130,
+        50
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "请求平面",
+      "wraps": [
+        "entrypoints",
+        "transport_http",
+        "app",
+        "memory",
+        "provider_memorax"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "状态与作用域",
+      "wraps": [
+        "repository",
+        "trace"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "控制平面",
+      "wraps": [
+        "lifecycle",
+        "clients",
+        "config"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "基础层",
+      "wraps": [
+        "shared",
+        "adapter_common"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "from": "entrypoints",
+      "to": "app",
+      "label": "组合"
+    },
+    {
+      "from": "transport_http",
+      "to": "app",
+      "label": "路由接入"
+    },
+    {
+      "from": "app",
+      "to": "memory",
+      "label": "注入"
+    },
+    {
+      "from": "app",
+      "to": "lifecycle",
+      "label": "组合"
+    },
+    {
+      "from": "memory",
+      "to": "provider_memorax",
+      "label": "Search / Add"
+    },
+    {
+      "from": "memory",
+      "to": "repository",
+      "label": "作用域",
+      "labelAt": [
+        545,
+        254
+      ]
+    },
+    {
+      "from": "memory",
+      "to": "trace",
+      "label": "事件"
+    },
+    {
+      "from": "lifecycle",
+      "to": "clients",
+      "label": "部署",
+      "labelAt": [
+        390,
+        694
+      ]
+    },
+    {
+      "from": "clients",
+      "to": "adapter_common",
+      "label": "共享运行时"
+    },
+    {
+      "from": "lifecycle",
+      "to": "adapter_common",
+      "label": "共享原语",
+      "labelAt": [
+        545,
+        694
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "请求流",
+      "items": [
+        "CLI 和 HTTP 入口组合 app 组合根",
+        "Memory 内核调用 MemoraX 提供者执行 Search 和 Add",
+        "Repository 作用域将会话固定到工作区身份"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "状态所有权",
+      "items": [
+        "Trace 仅存储本地按客户端限定的事件",
+        "Repository 以只读方式解析 Git 标记，不执行 Git",
+        "Provider 适配器是唯一的出站网络边界"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "基础层",
+      "items": [
+        "shared 为所有模块提供横切工具集",
+        "adapter-common 为 Backend 和全部 6 个适配器提供共享原语",
+        "两个基础层均不导入上层模块"
+      ]
+    }
+  ]
+}
