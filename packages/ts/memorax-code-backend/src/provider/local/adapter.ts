@@ -9,7 +9,7 @@ import type { RepositoryMemoryScope } from "../../repository/scope.js";
 import { isRecord } from "../../shared/record.js";
 import { loadEmbeddingConfig, embedText } from "./config.js";
 import { embeddingCircuit } from "./health.js";
-import { LocalMemoryStore } from "./store.js";
+import { LocalMemoryStore, type StoredMemory } from "./store.js";
 import type {
   MemoraxSlotInvocationRequest,
   MemoraxAdapterOptions,
@@ -22,10 +22,14 @@ export type LocalRunContext = {
   prompt: string;
 };
 
+export type LocalAdapterOptions = MemoraxAdapterOptions & {
+  rerank?: (query: string, candidates: StoredMemory[]) => StoredMemory[];
+};
+
 export async function invokeLocalMemoryProvider(
   run: LocalRunContext,
   request: MemoraxSlotInvocationRequest,
-  options: MemoraxAdapterOptions = {},
+  options: LocalAdapterOptions = {},
 ): Promise<MemoraxInvocationResult> {
   const repositoryScope = options.repositoryScope;
   if (!repositoryScope) {
@@ -140,7 +144,7 @@ async function handleRetrieve(
   store: LocalMemoryStore,
   run: LocalRunContext,
   request: MemoraxSlotInvocationRequest,
-  options: MemoraxAdapterOptions,
+  options: LocalAdapterOptions,
   home: string,
 ): Promise<MemoraxInvocationResult> {
   const operation: MemoryObservabilityOperation = request.operation === "query" ? "query" : "retrieve";
@@ -152,23 +156,24 @@ async function handleRetrieve(
   const topK = 6;
 
   try {
+    let queryVector: Float32Array | null = null;
     if (embedConfig.enabled && embedConfig.apiKey && !embeddingCircuit.isOpen(embedConfig)) {
       const embedResult = await embedText(query, embedConfig, options.fetchImpl);
       if (embedResult.ok) {
         embeddingCircuit.recordSuccess(embedConfig);
-        const results = store.searchByVector({
-          scope: options.repositoryScope!,
-          queryVector: embedResult.vector,
-          topK,
-          minScore: 0.1,
-        });
-        if (results.length > 0) return recordRetrieveSuccess(options, operation, query, results);
+        queryVector = embedResult.vector;
       } else {
         embeddingCircuit.recordFailure(embedConfig);
       }
     }
 
-    const results = store.searchByKeyword({ scope: options.repositoryScope!, query, topK });
+    const results = store.searchHybrid({
+      scope: options.repositoryScope!,
+      query,
+      queryVector,
+      topK,
+      rerank: options.rerank,
+    });
     return recordRetrieveSuccess(options, operation, query, results);
   } catch (error) {
     recordMemoryObservabilityEvent(options, {

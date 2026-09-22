@@ -209,3 +209,43 @@ test("emits observability events matching memorax shapes", async () => {
     await rm(dir, { recursive: true, force: true });
   }
 });
+
+test("adapter passes rerank hook through to hybrid retrieval", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "memorax-adapter-rerank-"));
+  try {
+    const scope = testScope();
+    const write = (key, content) => invokeLocalMemoryProvider(
+      { sessionId: "s1", prompt: "seed" },
+      { provider_id: "memory.local", slot: "state_context", operation: "writeback",
+        context: { idempotencyKey: key,
+          messages: [{ role: "assistant", content }] } },
+      adapterOptions(dir, scope),
+    );
+    await write("rerank-key-1", "Docker builds container images.");
+    await write("rerank-key-2", "Docker compose orchestrates stacks.");
+    const retrieveOpts = (rerank) => ({
+      ...adapterOptions(dir, scope),
+      ...(rerank ? { rerank } : {}),
+    });
+    const plain = await invokeLocalMemoryProvider(
+      { sessionId: "s1", prompt: "Docker" },
+      { provider_id: "memory.local", slot: "state_context", operation: "retrieve", query: "Docker" },
+      retrieveOpts(),
+    );
+    const reversed = await invokeLocalMemoryProvider(
+      { sessionId: "s1", prompt: "Docker" },
+      { provider_id: "memory.local", slot: "state_context", operation: "retrieve", query: "Docker" },
+      retrieveOpts((query, candidates) => [...candidates].reverse()),
+    );
+    assert.ok(plain.ok);
+    assert.ok(reversed.ok);
+    assert.equal(plain.result.tool_result_payload.items.length, 2);
+    assert.equal(reversed.result.tool_result_payload.items.length, 2);
+    assert.notEqual(
+      plain.result.tool_result_payload.items[0].memory,
+      reversed.result.tool_result_payload.items[0].memory,
+    );
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
