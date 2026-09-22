@@ -32,6 +32,7 @@ test("memory service exposes a sealed Hook facade and closes idempotently", asyn
       MEMORAX_CODE_CODEX_TRACE_ENABLED: "false",
       MEMORAX_CODE_OPENCODE_TRACE_ENABLED: "false",
       MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+      MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
       MEMORAX_CODE_MEMORAX_API_KEY: "secret",
       MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
     },
@@ -109,6 +110,7 @@ test("CodeBuddy and WorkBuddy isolate equal native IDs through service writeback
       MEMORAX_CODE_MEMORY_WRITEBACK_ENABLED: "true",
       MEMORAX_CODE_MEMORY_WRITEBACK_BUFFER_ENABLED: "false",
       MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+      MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
       MEMORAX_CODE_MEMORAX_API_KEY: "secret",
       MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
     },
@@ -189,6 +191,7 @@ test("memory service surfaces automatic Add quota on the next supported client t
       MEMORAX_CODE_MEMORY_WRITEBACK_ENABLED: "true",
       MEMORAX_CODE_MEMORY_WRITEBACK_BUFFER_ENABLED: "false",
       MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+      MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
       MEMORAX_CODE_MEMORAX_API_KEY: "secret",
       MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
     },
@@ -336,6 +339,7 @@ test("memory service discards fallback writeback when turn start upgrades the se
       MEMORAX_CODE_MEMORY_WRITEBACK_BUFFER_MAX_TURNS: "8",
       MEMORAX_CODE_MEMORY_WRITEBACK_BUFFER_MAX_AGE_MS: "600000",
       MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+      MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
       MEMORAX_CODE_MEMORAX_API_KEY: "secret",
       MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
     },
@@ -500,6 +504,7 @@ test("memory service records confirmed completion failures without changing Hook
           MEMORAX_CODE_MEMORY_WRITEBACK_ENABLED: String(!scenario.disabled),
           MEMORAX_CODE_MEMORY_WRITEBACK_BUFFER_ENABLED: "false",
           MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test", MEMORAX_CODE_MEMORAX_API_KEY: "secret",
+          MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
           MEMORAX_CODE_MEMORAX_USER_ID: "user-1" },
         fetchImpl: async (...args) => { requests.push(args); throw new Error("provider must not be called"); },
       });
@@ -542,6 +547,7 @@ test("memory service does not report an OpenCode interruption without cached Tur
     env: { MEMORAX_CODE_HOME: home, MEMORAX_CODE_DEBUG: "false",
       MEMORAX_CODE_OPENCODE_TRACE_ENABLED: "false", MEMORAX_CODE_MEMORY_WRITEBACK_ENABLED: "true",
       MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test", MEMORAX_CODE_MEMORAX_API_KEY: "secret",
+      MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
       MEMORAX_CODE_MEMORAX_USER_ID: "user-1" },
     fetchImpl: async () => { requests += 1; throw new Error("interruption must not upload"); } });
   t.after(() => service.close());

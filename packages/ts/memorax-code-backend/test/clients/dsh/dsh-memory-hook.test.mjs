@@ -47,6 +47,7 @@ test("DSH retrieval deduplicates exact event starts without changing the native 
       MEMORAX_CODE_DSH_TRACE_ENABLED: "false",
       MEMORAX_CODE_MEMORY_RETRIEVAL_ENABLED: "true",
       MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+      MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
       MEMORAX_CODE_MEMORAX_API_KEY: "secret",
       MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
     },
@@ -108,6 +109,7 @@ test("DSH leaves pending write and retrieval quota notices unclaimed for other c
       MEMORAX_CODE_MEMORY_WRITEBACK_ENABLED: "true",
       MEMORAX_CODE_MEMORY_WRITEBACK_BUFFER_ENABLED: "false",
       MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+      MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
       MEMORAX_CODE_MEMORAX_API_KEY: "secret",
       MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
     },
@@ -235,6 +237,7 @@ test("Backend runs DSH Search, normalized Trace, and Add from one native Turn in
     MEMORAX_CODE_MEMORY_WRITEBACK_ENABLED: "true",
     MEMORAX_CODE_MEMORY_WRITEBACK_BUFFER_ENABLED: "false",
     MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+    MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
     MEMORAX_CODE_MEMORAX_API_KEY: "secret",
     MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
   });
@@ -392,6 +395,7 @@ test("Backend recovers DSH turn metadata and writeback across a restart", async 
     MEMORAX_CODE_MEMORY_WRITEBACK_ENABLED: "true",
     MEMORAX_CODE_MEMORY_WRITEBACK_BUFFER_ENABLED: "false",
     MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+    MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
     MEMORAX_CODE_MEMORAX_API_KEY: "secret",
     MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
   });
@@ -498,6 +502,7 @@ test("Backend closes an interrupted DSH Trace without requiring Turn content or 
     MEMORAX_CODE_MEMORY_WRITEBACK_ENABLED: "true",
     MEMORAX_CODE_MEMORY_WRITEBACK_BUFFER_ENABLED: "false",
     MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+    MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
     MEMORAX_CODE_MEMORAX_API_KEY: "secret",
     MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
   });

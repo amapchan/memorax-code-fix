@@ -27,6 +27,7 @@ function automaticMemoryRetrieval(query, options = {}) {
 const BASE_ENV = {
   MEMORAX_CODE_MEMORY_RETRIEVAL_ENABLED: "true",
   MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+  MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
   MEMORAX_CODE_MEMORAX_API_KEY: "secret",
   MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
   MEMORAX_CODE_MEMORAX_STARTUP_TIMEOUT_MS: "1000",
@@ -37,6 +38,7 @@ test("automatic memory retrieval is disabled unless explicitly enabled", async (
   const result = await automaticMemoryRetrieval("fix the benchmark issue", {
     env: {
       MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+      MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
       MEMORAX_CODE_MEMORAX_API_KEY: "secret",
       MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
     },
@@ -225,6 +227,7 @@ test("Claude Hook route retrieves automatic memory once", async () => {
   const restoreEnv = withEnv({
     MEMORAX_CODE_MEMORY_RETRIEVAL_ENABLED: "true",
     MEMORAX_CODE_MEMORAX_ENDPOINT: memoraxUrl,
+    MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
     MEMORAX_CODE_MEMORAX_API_KEY: "secret",
     MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
     MEMORAX_CODE_MEMORAX_STARTUP_TIMEOUT_MS: "1000",

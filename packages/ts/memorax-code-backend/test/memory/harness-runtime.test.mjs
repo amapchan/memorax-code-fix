@@ -15,6 +15,7 @@ test("harness retrieval keeps quota notices separate and claims them once per co
     memoraxCodeHome: root,
     env: {
       MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+      MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
       MEMORAX_CODE_MEMORAX_API_KEY: "test-key",
       MEMORAX_CODE_MEMORAX_USER_ID: "test-user",
       MEMORAX_CODE_MEMORY_RETRIEVAL_ENABLED: "true",
@@ -117,6 +118,7 @@ test("harness runtimes isolate identical turns and preserve injected resources w
     memoraxCodeHome: join(root, "home"),
     env: {
       MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+      MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
       MEMORAX_CODE_MEMORAX_API_KEY: "test-key",
       MEMORAX_CODE_MEMORAX_USER_ID: "test-user",
       MEMORAX_CODE_MEMORY_RETRIEVAL_ENABLED: "false",

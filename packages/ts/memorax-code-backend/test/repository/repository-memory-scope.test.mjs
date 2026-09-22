@@ -1238,6 +1238,7 @@ function memoryEnv(home) {
   return {
     MEMORAX_CODE_HOME: home,
     MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+    MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
     MEMORAX_CODE_MEMORAX_API_KEY: "secret",
     MEMORAX_CODE_MEMORAX_USER_ID: "alice",
   };

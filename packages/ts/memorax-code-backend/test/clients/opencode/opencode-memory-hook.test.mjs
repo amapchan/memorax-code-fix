@@ -238,6 +238,7 @@ test("OpenCode runtime routes SDK content and carries write quota to the next pr
       MEMORAX_CODE_MEMORY_WRITEBACK_ENABLED: "true",
       MEMORAX_CODE_MEMORY_WRITEBACK_BUFFER_ENABLED: "false",
       MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+      MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
       MEMORAX_CODE_MEMORAX_API_KEY: "secret",
       MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
     },
@@ -348,6 +349,7 @@ test("OpenCode default chat shares General across automatic Add and nested Skill
     MEMORAX_CODE_MEMORY_WRITEBACK_ENABLED: "true",
     MEMORAX_CODE_MEMORY_WRITEBACK_BUFFER_ENABLED: "false",
     MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+    MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
     MEMORAX_CODE_MEMORAX_API_KEY: "secret",
     MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
   };
@@ -430,6 +432,7 @@ test("OpenCode SDK completion requires a prior scope binding but not unexpired t
       MEMORAX_CODE_OPENCODE_TRACE_ENABLED: "false",
       MEMORAX_CODE_MEMORY_RETRIEVAL_ENABLED: "false",
       MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+      MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
       MEMORAX_CODE_MEMORAX_API_KEY: "secret",
       MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
     },

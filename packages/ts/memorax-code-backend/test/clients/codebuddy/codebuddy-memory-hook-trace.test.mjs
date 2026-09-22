@@ -315,6 +315,7 @@ function configuredEnv(home, overrides = {}) {
     MEMORAX_CODE_MEMORY_WRITEBACK_ENABLED: "true",
     MEMORAX_CODE_MEMORY_WRITEBACK_BUFFER_ENABLED: "false",
     MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+    MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
     MEMORAX_CODE_MEMORAX_API_KEY: "secret",
     MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
     ...overrides,

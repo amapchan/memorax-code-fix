@@ -82,6 +82,7 @@ test("seeded MemoraX Code config exposes high-signal choices without a tuning ca
 test("MemoraX config resolver centralizes defaults and clamps env values", () => {
   const result = memoraxConfigFromEnv({
     MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test/",
+    MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
     MEMORAX_CODE_MEMORAX_API_KEY: "secret",
     MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
     MEMORAX_CODE_MEMORAX_TOP_K: "200",
@@ -305,6 +306,7 @@ test("memorax add options accepts pre-summarized code mode", async () => {
 test("memoryConfigStatus reports effective writeback and add settings", async () => {
   const status = await memoryConfigStatus({
     MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test/",
+    MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
     MEMORAX_CODE_MEMORAX_API_KEY: "secret",
     MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
     MEMORAX_CODE_MEMORAX_TOP_K: "3",
@@ -399,6 +401,7 @@ test("writeback helper config preserves positive integer fallback semantics", ()
 test("writeback helper config treats -1 buffer interval as automatic add disabled", async () => {
   const env = {
     MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test/",
+    MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
     MEMORAX_CODE_MEMORAX_API_KEY: "secret",
     MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
     MEMORAX_CODE_MEMORAX_WRITEBACK_ENABLED: "true",

@@ -34,6 +34,7 @@ test("MemoraX adapter uses the injected HTTP transport for retrieval", async () 
     {
       env: {
         MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+        MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
         MEMORAX_CODE_MEMORAX_API_KEY: "secret",
         MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
       },
@@ -98,6 +99,7 @@ test("MemoraX adapter omits incomplete balance entries", async () => {
     {
       env: {
         MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+        MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
         MEMORAX_CODE_MEMORAX_API_KEY: "secret",
         MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
       },
@@ -134,6 +136,7 @@ test("MemoraX adapter rejects real requests without a memory scope", async () =>
     {
       env: {
         MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+        MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
         MEMORAX_CODE_MEMORAX_API_KEY: "secret",
         MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
       },
@@ -336,6 +339,7 @@ test("MemoraX adapter uses configured credentials over HTTP and emits search eve
       {
         env: {
           MEMORAX_CODE_MEMORAX_ENDPOINT: baseUrl,
+          MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
           MEMORAX_CODE_MEMORAX_API_KEY: "secret-debug-key",
           MEMORAX_CODE_MEMORAX_USER_ID: "debug-user",
         },
@@ -566,6 +570,7 @@ test("MemoraX adapter preserves successful writeback when observability throws",
         },
         env: {
           MEMORAX_CODE_MEMORAX_ENDPOINT: baseUrl,
+          MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
           MEMORAX_CODE_MEMORAX_API_KEY: "secret-debug-key",
           MEMORAX_CODE_MEMORAX_USER_ID: "debug-user",
         },
@@ -708,6 +713,7 @@ test("MemoraX adapter rejects malformed successful responses without exposing th
         {
           env: {
             MEMORAX_CODE_MEMORAX_ENDPOINT: baseUrl,
+            MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
             MEMORAX_CODE_MEMORAX_API_KEY: "test-key",
             MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
           },
@@ -796,6 +802,7 @@ test("MemoraX adapter rejects blank messages outside valid default code fragment
       {
         env: {
           MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+          MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
           MEMORAX_CODE_MEMORAX_API_KEY: "secret",
           MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
         },
@@ -845,6 +852,7 @@ test("MemoraX adapter preserves prebuilt code evidence packs", async () => {
       {
         env: {
           MEMORAX_CODE_MEMORAX_ENDPOINT: baseUrl,
+          MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
           MEMORAX_CODE_MEMORAX_API_KEY: "secret",
           MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
           MEMORAX_CODE_MEMORAX_ADD_CONTENT_TYPE: "code",
@@ -896,6 +904,7 @@ for (const [systemCode, message] of [
         {
           env: {
             MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+            MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
             MEMORAX_CODE_MEMORAX_API_KEY: "private-api-key",
             MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
           },
@@ -941,6 +950,7 @@ test("MemoraX adapter rejects invalid success shapes and redacts failed task env
         {
           env: {
             MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+            MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
             MEMORAX_CODE_MEMORAX_API_KEY: "test-key",
             MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
           },
@@ -979,6 +989,7 @@ test("MemoraX adapter preserves supported empty Search and asynchronous Add ackn
         {
           env: {
             MEMORAX_CODE_MEMORAX_ENDPOINT: "http://memorax.test",
+            MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
             MEMORAX_CODE_MEMORAX_API_KEY: "test-key",
             MEMORAX_CODE_MEMORAX_USER_ID: "user-1",
           },
