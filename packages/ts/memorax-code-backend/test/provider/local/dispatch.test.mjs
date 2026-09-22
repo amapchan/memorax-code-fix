@@ -40,3 +40,18 @@ test("dispatch routes to memorax when env override set", async () => {
     await rm(dir, { recursive: true, force: true });
   }
 });
+
+test("dispatch treats unknown provider strings as memorax and fails closed", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "memorax-dispatch-unknown-"));
+  try {
+    const result = await invokeMemoryProvider(
+      { sessionId: "s1", prompt: "test query" },
+      { provider_id: "memory.memorax", slot: "state_context", operation: "retrieve", query: "test" },
+      { env: { MEMORAX_CODE_HOME: dir, MEMORAX_CODE_MEMORY_PROVIDER: "typo" }, repositoryScope: testScope() },
+    );
+    assert.equal(result.ok, false, "unknown provider must fall through to memorax validation");
+    assert.match(result.error, /API_KEY/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});

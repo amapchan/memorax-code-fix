@@ -1509,3 +1509,28 @@ async function createLinkedWorktreeMetadata(workspace, commonDir, name) {
   await writeFile(join(adminDir, "commondir"), "../..\n", "utf8");
   await writeFile(join(workspace, ".git"), `gitdir: ${adminDir}\n`, "utf8");
 }
+
+test("memory CLI works out of the box with the default local provider", async (t) => {
+  const root = await mkdtemp(join(tmpdir(), "memorax-code-cli-local-default-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const memoraxCodeHome = join(root, "home");
+  const workspace = join(root, "notes");
+  await mkdir(workspace, { recursive: true });
+  // No memorax credentials, no provider override: the default local provider
+  // resolves the scope offline and stores in the local SQLite file.
+  const env = { MEMORAX_CODE_HOME: memoraxCodeHome };
+
+  const status = await runMemoryCli(["status"], { cwd: workspace, env });
+  assert.equal(status.ok, true);
+  assert.equal(status.baseUserId, "local-user");
+  assert.equal(status.effectiveUserId, "local-user@notes");
+
+  const added = await runMemoryCli([
+    "add", "--memory", "Remember the offline local flow.", "--type", "semantic", "--reason", "Local default test.",
+  ], { cwd: workspace, env });
+  assert.equal(added.ok, true, `CLI add failed: ${JSON.stringify(added)}`);
+
+  const search = await runMemoryCli(["search", "--query", "offline local flow"], { cwd: workspace, env });
+  assert.equal(search.ok, true, `CLI search failed: ${JSON.stringify(search)}`);
+  assert.match(JSON.stringify(search), /offline local flow/);
+});

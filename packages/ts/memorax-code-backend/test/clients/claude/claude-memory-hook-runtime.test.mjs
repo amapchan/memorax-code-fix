@@ -693,6 +693,7 @@ test("Claude automatic retrieval counts each prompt id once per session", async 
   const requests = [];
   const env = {
     ...TRACE_DISABLED_ENV,
+    MEMORAX_CODE_MEMORY_PROVIDER: "memorax",
     MEMORAX_CODE_MEMORY_RETRIEVAL_ENABLED: "true",
   };
   const runtime = createClaudeMemoryHookRuntime({
@@ -722,6 +723,7 @@ test("Claude automatic retrieval counts each prompt id once per session", async 
     },
     maxEntries: 2,
     repositoryMemorySession: repositoryRuntime({
+      provider: "memorax",
       baseUrl: "http://memorax.test",
       apiKey: "secret",
       userId: "user-1",

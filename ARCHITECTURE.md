@@ -538,6 +538,10 @@ Important distinctions:
   completion above remain mismatches. A changed
   Base User ID requires a new binding; existing Turn metadata remains subject
   to the coordinator's scope validation.
+- In local memory mode the Base User ID falls back to the stable
+  `local-user` default when no configured username exists, so scope
+  resolution and session bindings work fully offline; the fallback identity
+  is an ordinary Base User ID and never crosses the network.
 - Local mode may authorize loopback requests without a configured token. Token
   authentication is required when configuration or exposure mode demands it.
 - Client-specific runtimes interpret native formats. Client-neutral memory

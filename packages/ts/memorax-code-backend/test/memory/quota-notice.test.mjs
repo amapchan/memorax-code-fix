@@ -190,6 +190,7 @@ test("pending write quota notices keep the lowest snapshot for the originating c
 
 function accountConfig(memoryOutputLanguage = "en") {
   return {
+    provider: "memorax",
     baseUrl: "https://platform.memorax.net",
     apiKey: API_KEY,
     memoryOutputLanguage,

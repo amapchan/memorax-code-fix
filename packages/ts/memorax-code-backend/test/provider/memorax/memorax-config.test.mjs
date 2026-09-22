@@ -38,6 +38,67 @@ test("MemoraX config resolver uses the platform endpoint by default", () => {
   assert.equal(result.config.memoryOutputLanguage, "zh");
 });
 
+test("memoraxConfigFromEnv tolerates missing credentials for the default local provider", () => {
+  const result = memoraxConfigFromEnv({}, {});
+
+  assert.equal(result.ok, true);
+  assert.equal(result.config.provider, "local");
+  assert.equal(result.config.userId, "local-user");
+  assert.equal(result.config.apiKey, "");
+});
+
+test("memoraxConfigFromEnv honors a configured user id in local mode with env precedence", () => {
+  const fileOnly = memoraxConfigFromEnv({}, { memorax: { user_id: "file-user" } });
+  assert.equal(fileOnly.ok, true);
+  assert.equal(fileOnly.config.provider, "local");
+  assert.equal(fileOnly.config.userId, "file-user");
+
+  const envWins = memoraxConfigFromEnv(
+    { MEMORAX_CODE_MEMORAX_USER_ID: "env-user" },
+    { memorax: { user_id: "file-user" } },
+  );
+  assert.equal(envWins.ok, true);
+  assert.equal(envWins.config.userId, "env-user");
+});
+
+test("memoraxConfigFromEnv retains an api key without requiring it in local mode", () => {
+  const result = memoraxConfigFromEnv({ MEMORAX_CODE_MEMORAX_API_KEY: "secret" }, {});
+
+  assert.equal(result.ok, true);
+  assert.equal(result.config.provider, "local");
+  assert.equal(result.config.apiKey, "secret");
+  assert.equal(result.config.userId, "local-user");
+});
+
+test("memoraxConfigFromEnv resolves the provider from file config and stays strict for memorax", () => {
+  const localFile = memoraxConfigFromEnv({}, { memory: { provider: "local" } });
+  assert.equal(localFile.ok, true);
+  assert.equal(localFile.config.provider, "local");
+
+  const memoraxFile = memoraxConfigFromEnv({}, { memory: { provider: "memorax" } });
+  assert.equal(memoraxFile.ok, false);
+  assert.match(memoraxFile.error, /MEMORAX_CODE_MEMORAX_API_KEY is required/);
+
+  const memoraxMissingUser = memoraxConfigFromEnv(
+    { MEMORAX_CODE_MEMORY_PROVIDER: "memorax", MEMORAX_CODE_MEMORAX_API_KEY: "secret" },
+    {},
+  );
+  assert.equal(memoraxMissingUser.ok, false);
+  assert.match(memoraxMissingUser.error, /MEMORAX_CODE_MEMORAX_USER_ID is required/);
+
+  const unknownProvider = memoraxConfigFromEnv({ MEMORAX_CODE_MEMORY_PROVIDER: "typo" }, {});
+  assert.equal(unknownProvider.ok, false);
+  assert.match(unknownProvider.error, /MEMORAX_CODE_MEMORAX_API_KEY is required/);
+});
+
+test("memoryConfigStatus reports the resolved local provider and default identity", async () => {
+  const status = await memoryConfigStatus({});
+
+  assert.equal(status.provider, "local");
+  assert.equal(status.configured, true);
+  assert.equal(status.userId, "local-user");
+});
+
 test("MemoraX endpoint helper normalizes trailing slashes", () => {
   assert.equal(
     normalizeMemoraxBaseUrl(" https://platform.memorax.net/// "),
@@ -62,6 +123,7 @@ test("seeded MemoraX Code config exposes high-signal choices without a tuning ca
   assert.match(config, /# endpoint = "https:\/\/platform\.memorax\.net" # MemoraX service URL\./);
   assert.match(config, /# api_key = "" # MemoraX API key used by the local Backend\./);
   assert.match(config, /# user_id = "" # MemoraX base user ID; requests derive a workspace-scoped namespace\./);
+  assert.match(config, /\[memory\]\nprovider = "local"/);
   assert.match(config, /\[memory\.retrieval\]\nenabled = false # Auto-inject retrieved memories into supported client prompts\./);
   assert.match(config, /\[memory\.writeback\]/);
   assert.match(config, /enabled = true # Allow supported client sessions to write memories after replies\./);
@@ -75,7 +137,7 @@ test("seeded MemoraX Code config exposes high-signal choices without a tuning ca
   assert.match(config, /capture_content = true # Store content in local Claude trace events\./);
   assert.doesNotMatch(
     config,
-    /\[memory\]\s|top_k|k_dense|k_sparse|min_score|max_context_chars|max_item_chars|buffer_|chunk_|max_message_chars|timeout_ms|retention_days|max_event_chars|max_file_bytes/,
+    /top_k|k_dense|k_sparse|min_score|max_context_chars|max_item_chars|buffer_|chunk_|max_message_chars|timeout_ms|retention_days|max_event_chars|max_file_bytes/,
   );
 });
 

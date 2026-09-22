@@ -470,6 +470,13 @@ the process on keyword search until restart; the CLI re-probes on its next
 invocation. Rows written without embeddings stay searchable by keyword and
 gain vectors when rewritten.
 
+No MemoraX credentials are needed for the local provider: it runs fully
+offline out of the box. The scope base identity falls back to
+`local-user` when neither `MEMORAX_CODE_MEMORAX_USER_ID` nor
+`[memorax].user_id` is configured, so every memory operation still resolves
+to a stable per-user namespace. A configured `user_id` is honored unchanged;
+the memorax `api_key` is accepted but unused in local mode.
+
 ### MemoraX provider (opt-in)
 
 Set `[memory].provider = "memorax"` or

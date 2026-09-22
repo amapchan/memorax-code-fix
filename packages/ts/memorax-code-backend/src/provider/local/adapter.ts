@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { join } from "node:path";
+import { existsSync, mkdirSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { defaultMemoraxCodeHome } from "../../config/memorax-code.js";
 import type {
   MemoryObservabilityEvent,
@@ -37,7 +38,13 @@ export async function invokeLocalMemoryProvider(
     return { ok: false, error: "memory scope is required for local memory provider" };
   }
   const home = options.env?.MEMORAX_CODE_HOME?.trim() || defaultMemoraxCodeHome(options.env);
-  const store = new LocalMemoryStore(join(home, "local-memory.db"));
+  const dbPath = join(home, "local-memory.db");
+  // Bootstrap the state directory so a fresh home (or CLI invocation before
+  // setup) cannot crash the store open with SQLITE_CANTOPEN.
+  if (!existsSync(dirname(dbPath))) {
+    mkdirSync(dirname(dbPath), { recursive: true });
+  }
+  const store = new LocalMemoryStore(dbPath);
   try {
     switch (request.operation) {
       case "writeback":

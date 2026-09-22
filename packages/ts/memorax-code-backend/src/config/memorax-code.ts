@@ -157,6 +157,7 @@ export function renderDefaultMemoraxCodeConfig(): string {
     '# user_id = "" # MemoraX base user ID; requests derive a workspace-scoped namespace.',
     "",
     "# Memory provider: local (SQLite + embedding) or memorax (remote API).",
+    "[memory]",
     'provider = "local"',
     "",
     "# Automatic Hook retrieval is opt-in.",
@@ -251,6 +252,20 @@ export function loadMemoraxCodeConfig(
     (options.warn ?? console.warn)(`failed to parse MemoraX Code config ${path}: ${errorMessage(error)}`);
     return {};
   }
+}
+
+// Single authority for memory provider selection: environment override,
+// then the config file, then the local-first default. Exactly "local" routes
+// to the local provider; every other value routes to the remote memorax
+// provider, whose credential validation stays fail-closed.
+export function resolveMemoryProvider(
+  env: Record<string, string | undefined> = process.env,
+  fileConfig?: MemoraxCodeConfig,
+): string {
+  const envProvider = env.MEMORAX_CODE_MEMORY_PROVIDER?.trim();
+  if (envProvider) return envProvider;
+  const config = fileConfig ?? loadMemoraxCodeConfig(defaultMemoraxCodeHome(env));
+  return config.memory?.provider?.trim() || "local";
 }
 
 export function loadLifecycleMemoraxCodeConfig(

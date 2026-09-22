@@ -748,6 +748,7 @@ for (const [phase, operation] of [["headers", "query"], ["body", "writeback"]]) 
       },
       {
         config: {
+          provider: "memorax",
           baseUrl: "http://memorax.test",
           apiKey: "secret",
           userId: "user-1",

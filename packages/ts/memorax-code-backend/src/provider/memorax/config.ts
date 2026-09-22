@@ -8,6 +8,7 @@ import {
 import {
   defaultMemoraxCodeHome,
   loadMemoraxCodeConfig,
+  resolveMemoryProvider,
   type MemoraxCodeConfig,
 } from "../../config/memorax-code.js";
 
@@ -32,6 +33,7 @@ export const MEMORY_CLI_DEFAULT_SESSION_ID = "memorax-cli";
 export const MEMORY_CLI_DEFAULT_MAX_MEMORY_CHARS = 2000;
 
 export type MemoraxAdapterConfig = Readonly<{
+  provider: "local" | "memorax";
   baseUrl: string;
   apiKey: string;
   userId: string;
@@ -64,7 +66,7 @@ export type MemoryWritebackChunkConfig = Readonly<{
 }>;
 
 export type MemoraxConfigStatus = Readonly<{
-  provider: typeof MEMORAX_PROVIDER_ID;
+  provider: string;
   baseUrl?: string;
   userId?: string;
   configured: boolean;
@@ -109,20 +111,28 @@ export function memoraxConfigFromEnv(
   fileConfig?: MemoraxCodeConfig,
 ): { ok: true; config: MemoraxAdapterConfig } | { ok: false; error: string } {
   const config = configForEnv(env, fileConfig);
+  const provider = resolveMemoryProvider(env, config);
   const baseUrl = normalizeMemoraxBaseUrl(stringValue(env.MEMORAX_CODE_MEMORAX_ENDPOINT)
     ?? config.memorax?.endpoint
     ?? MEMORAX_DEFAULT_BASE_URL);
   const apiKey = (stringValue(env.MEMORAX_CODE_MEMORAX_API_KEY) ?? config.memorax?.api_key ?? "").trim();
-  const userId = (stringValue(env.MEMORAX_CODE_MEMORAX_USER_ID) ?? config.memorax?.user_id ?? "").trim();
+  const configuredUserId = (stringValue(env.MEMORAX_CODE_MEMORAX_USER_ID) ?? config.memorax?.user_id ?? "").trim();
   const outputLanguage = memoraxMemoryOutputLanguage(env, config);
   if (!outputLanguage.ok) return outputLanguage;
-  if (!apiKey) return { ok: false, error: "MEMORAX_CODE_MEMORAX_API_KEY is required for memory.memorax" };
-  if (!userId) return { ok: false, error: "MEMORAX_CODE_MEMORAX_USER_ID is required for memory.memorax" };
+  // Credential validation stays fail-closed for the remote memorax provider.
+  // The local provider needs no account: an api key is tolerated but unused,
+  // and the identity falls back to the documented local default.
+  if (provider !== "local") {
+    if (!apiKey) return { ok: false, error: "MEMORAX_CODE_MEMORAX_API_KEY is required for memory.memorax" };
+    if (!configuredUserId) return { ok: false, error: "MEMORAX_CODE_MEMORAX_USER_ID is required for memory.memorax" };
+  }
+  const userId = configuredUserId || "local-user";
   const searchConfig = memoraxSearchConfig(env, config);
   const minScore = parseScore(env.MEMORAX_CODE_MEMORAX_MIN_SCORE ?? config.memory?.retrieval?.min_score);
   return {
     ok: true,
     config: {
+      provider: provider === "local" ? "local" : "memorax",
       baseUrl,
       apiKey,
       userId,
@@ -306,6 +316,7 @@ export function memoryConfigStatus(
   fileConfig?: MemoraxCodeConfig,
 ): MemoraxConfigStatus {
   const config = configForEnv(env, fileConfig);
+  const provider = resolveMemoryProvider(env, config);
   const configResult = memoraxConfigFromEnv(env, config);
   const baseConfig = configResult.ok ? configResult.config : undefined;
   const addStatus = memoraxAddStatus(env, config);
@@ -315,7 +326,7 @@ export function memoryConfigStatus(
   };
   const searchConfig = baseConfig ?? fallbackSearchConfig;
   return {
-    provider: MEMORAX_PROVIDER_ID,
+    provider,
     ...(baseConfig ? { baseUrl: baseConfig.baseUrl, userId: baseConfig.userId } : {}),
     configured: configResult.ok,
     search: {

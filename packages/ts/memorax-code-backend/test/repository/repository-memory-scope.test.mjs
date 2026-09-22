@@ -1264,3 +1264,52 @@ async function createWorktreeAdmin(adminDir) {
   await writeFile(join(adminDir, "HEAD"), "ref: refs/heads/main\n", "utf8");
   await writeFile(join(adminDir, "commondir"), "../..\r\n", "utf8");
 }
+
+test("out-of-box local provider resolves scope with the default local identity", async (t) => {
+  const root = await mkdtemp(join(tmpdir(), "memorax-code-scope-local-identity-"));
+  t.after(() => fsPromises.rm(root, { recursive: true, force: true }));
+  const home = join(root, "home");
+  const workspace = join(root, "notes");
+  const other = join(root, "other");
+  await mkdir(workspace, { recursive: true });
+  await mkdir(other, { recursive: true });
+  // No MEMORAX_CODE_MEMORAX_API_KEY / MEMORAX_CODE_MEMORAX_USER_ID and no
+  // provider override: the default local provider resolves offline.
+  const env = { MEMORAX_CODE_HOME: home };
+
+  const owner = {};
+  const first = await resolveConfiguredRepositoryMemoryForSession({
+    owner,
+    client: "codex",
+    sessionId: "local-identity-session",
+    workspaceRoot: workspace,
+    memoraxCodeHome: home,
+    env,
+  });
+  assert.equal(first.ok, true);
+  assert.equal(first.memory.config.provider, "local");
+  assert.equal(first.memory.scope.baseUserId, "local-user");
+  assert.equal(first.memory.scope.effectiveUserId, "local-user@notes");
+
+  const again = await resolveConfiguredRepositoryMemoryForSession({
+    owner,
+    client: "codex",
+    sessionId: "local-identity-session",
+    workspaceRoot: workspace,
+    memoraxCodeHome: home,
+    env,
+  });
+  assert.equal(again.ok, true);
+  assert.equal(again.memory.scope.effectiveUserId, "local-user@notes");
+
+  const mismatch = await resolveConfiguredRepositoryMemoryForSession({
+    owner,
+    client: "codex",
+    sessionId: "local-identity-session",
+    workspaceRoot: other,
+    memoraxCodeHome: home,
+    env,
+  });
+  assert.equal(mismatch.ok, false);
+  assert.equal(mismatch.reason, "workspace_scope_mismatch");
+});
