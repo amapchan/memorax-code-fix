@@ -1,7 +1,13 @@
+import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 import { defaultMemoraxCodeHome } from "../../config/memorax-code.js";
+import type {
+  MemoryObservabilityEvent,
+  MemoryObservabilityOperation,
+} from "../../memory/observability.js";
 import type { RepositoryMemoryScope } from "../../repository/scope.js";
-import { loadEmbeddingConfig, embedText, type EmbeddingConfig } from "./config.js";
+import { isRecord } from "../../shared/record.js";
+import { loadEmbeddingConfig, embedText } from "./config.js";
 import { embeddingCircuit } from "./health.js";
 import { LocalMemoryStore } from "./store.js";
 import type {
@@ -75,6 +81,11 @@ async function handleWriteback(
     }
   }
 
+  const writebackRequest = {
+    slot: request.slot || "state_context",
+    idempotencyKey,
+    messageCount: contentParts.length,
+  };
   try {
     store.insertMemory({
       scope: options.repositoryScope!,
@@ -88,6 +99,12 @@ async function handleWriteback(
     });
   } catch (error) {
     if (String(error).includes("UNIQUE constraint")) {
+      recordMemoryObservabilityEvent(options, {
+        operation: "writeback",
+        ok: true,
+        request: writebackRequest,
+        response: { receiptId: `local:${idempotencyKey}`, accepted: true, duplicate: true },
+      });
       return {
         ok: true,
         result: {
@@ -96,8 +113,20 @@ async function handleWriteback(
         },
       };
     }
+    recordMemoryObservabilityEvent(options, {
+      operation: "writeback",
+      ok: false,
+      request: writebackRequest,
+      error: error instanceof Error ? error.message : String(error),
+    });
     throw error;
   }
+  recordMemoryObservabilityEvent(options, {
+    operation: "writeback",
+    ok: true,
+    request: writebackRequest,
+    response: { receiptId: `local:${idempotencyKey}`, accepted: true },
+  });
   return {
     ok: true,
     result: {
@@ -114,6 +143,7 @@ async function handleRetrieve(
   options: MemoraxAdapterOptions,
   home: string,
 ): Promise<MemoraxInvocationResult> {
+  const operation: MemoryObservabilityOperation = request.operation === "query" ? "query" : "retrieve";
   const query = typeof request.query === "string" && request.query.trim()
     ? request.query.trim()
     : run.prompt.trim();
@@ -121,33 +151,69 @@ async function handleRetrieve(
   const embedConfig = loadEmbeddingConfig(home, options.env);
   const topK = 6;
 
-  if (embedConfig.enabled && embedConfig.apiKey && !embeddingCircuit.isOpen(embedConfig)) {
-    const embedResult = await embedText(query, embedConfig, options.fetchImpl);
-    if (embedResult.ok) {
-      embeddingCircuit.recordSuccess(embedConfig);
-      const results = store.searchByVector({
-        scope: options.repositoryScope!,
-        queryVector: embedResult.vector,
-        topK,
-        minScore: 0.1,
-      });
-      if (results.length > 0) return formatResults(results);
-    } else {
-      embeddingCircuit.recordFailure(embedConfig);
+  try {
+    if (embedConfig.enabled && embedConfig.apiKey && !embeddingCircuit.isOpen(embedConfig)) {
+      const embedResult = await embedText(query, embedConfig, options.fetchImpl);
+      if (embedResult.ok) {
+        embeddingCircuit.recordSuccess(embedConfig);
+        const results = store.searchByVector({
+          scope: options.repositoryScope!,
+          queryVector: embedResult.vector,
+          topK,
+          minScore: 0.1,
+        });
+        if (results.length > 0) return recordRetrieveSuccess(options, operation, query, results);
+      } else {
+        embeddingCircuit.recordFailure(embedConfig);
+      }
     }
-  }
 
-  const results = store.searchByKeyword({ scope: options.repositoryScope!, query, topK });
-  return formatResults(results);
+    const results = store.searchByKeyword({ scope: options.repositoryScope!, query, topK });
+    return recordRetrieveSuccess(options, operation, query, results);
+  } catch (error) {
+    recordMemoryObservabilityEvent(options, {
+      operation,
+      ok: false,
+      request: { slot: request.slot || "state_context", query },
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
 }
 
-function formatResults(results: Array<{ content: string; memoryType: string; updatedAt: number }>): MemoraxInvocationResult {
+function recordRetrieveSuccess(
+  options: MemoraxAdapterOptions,
+  operation: MemoryObservabilityOperation,
+  query: string,
+  results: Array<{ content: string; memoryType: string; updatedAt: number }>,
+): MemoraxInvocationResult {
+  const receiptId = `local:${randomUUID()}`;
+  const formatted = formatResults(results, receiptId);
+  if (formatted.ok) {
+    recordMemoryObservabilityEvent(options, {
+      operation,
+      ok: true,
+      request: { slot: "state_context", query },
+      response: {
+        receiptId,
+        itemCount: results.length,
+        contextBlockCount: results.length > 0 ? 1 : 0,
+      },
+    });
+  }
+  return formatted;
+}
+
+function formatResults(
+  results: Array<{ content: string; memoryType: string; updatedAt: number }>,
+  receiptId: string = `local:${randomUUID()}`,
+): MemoraxInvocationResult {
   if (results.length === 0) {
     return {
       ok: true,
       result: {
         tool_result_payload: { answer: "", items: [], contextBlocks: [] },
-        dispatch_receipt: { accepted: true, receipt_id: `local:${Date.now()}`, summary: "retrieved 0 item(s)" },
+        dispatch_receipt: { accepted: true, receipt_id: receiptId, summary: "retrieved 0 item(s)" },
       },
     };
   }
@@ -165,8 +231,39 @@ function formatResults(results: Array<{ content: string; memoryType: string; upd
         items,
         contextBlocks: [{ type: "memory_context", source: "local", content: contextText, itemCount: items.length }],
       },
-      dispatch_receipt: { accepted: true, receipt_id: `local:${Date.now()}`, summary: `retrieved ${items.length} item(s)` },
+      dispatch_receipt: { accepted: true, receipt_id: receiptId, summary: `retrieved ${items.length} item(s)` },
     },
   };
 }
 
+function recordMemoryObservabilityEvent(
+  options: MemoraxAdapterOptions,
+  event: Omit<MemoryObservabilityEvent, "source">,
+): void {
+  const observability = options.observability;
+  if (!observability?.recordEvent) return;
+  const source = options.observabilitySource ?? "unknown";
+  const request = options.writebackAttempt && isRecord(event.request)
+    ? {
+        ...event.request,
+        attempt: options.writebackAttempt.attempt,
+        maxAttempts: options.writebackAttempt.maxAttempts,
+      }
+    : event.request;
+  try {
+    observability.recordEvent({
+      source,
+      ...(options.traceContext ? { traceContext: options.traceContext } : {}),
+      ...(options.relatedTurns?.length ? { relatedTurns: options.relatedTurns } : {}),
+      ...event,
+      ...(request === undefined ? {} : { request }),
+    });
+  } catch (error) {
+    options.diagnosticLogger?.("memory_observability.record_failed", {
+      source,
+      operation: event.operation,
+      ok: event.ok,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+}

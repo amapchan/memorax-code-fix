@@ -166,3 +166,46 @@ test("failing embed opens circuit: keyword fallback without re-probe", async () 
     await rm(dir, { recursive: true, force: true });
   }
 });
+
+test("emits observability events matching memorax shapes", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "memorax-adapter-obs-"));
+  try {
+    const scope = testScope();
+    const events = [];
+    const observability = { recordEvent: (event) => events.push(event) };
+    const obsOpts = (source) => ({
+      ...adapterOptions(dir, scope),
+      observability,
+      observabilitySource: source,
+    });
+    await invokeLocalMemoryProvider(
+      { sessionId: "s1", prompt: "seed" },
+      { provider_id: "memory.local", slot: "state_context", operation: "writeback",
+        context: { idempotencyKey: "obs-wb-1",
+          messages: [{ role: "assistant", content: "Uses Docker for builds." }] } },
+      obsOpts("automatic_writeback"),
+    );
+    await invokeLocalMemoryProvider(
+      { sessionId: "s1", prompt: "Docker" },
+      { provider_id: "memory.local", slot: "state_context", operation: "retrieve", query: "Docker" },
+      obsOpts("automatic_retrieval"),
+    );
+    assert.equal(events.length, 2);
+    const [writeEvent, retrieveEvent] = events;
+    assert.equal(writeEvent.source, "automatic_writeback");
+    assert.equal(writeEvent.operation, "writeback");
+    assert.equal(writeEvent.ok, true);
+    assert.equal(writeEvent.request.slot, "state_context");
+    assert.equal(writeEvent.request.idempotencyKey, "obs-wb-1");
+    assert.equal(writeEvent.request.messageCount, 1);
+    assert.ok(writeEvent.response.receiptId.startsWith("local:"));
+    assert.equal(retrieveEvent.source, "automatic_retrieval");
+    assert.equal(retrieveEvent.operation, "retrieve");
+    assert.equal(retrieveEvent.ok, true);
+    assert.equal(retrieveEvent.request.query, "Docker");
+    assert.equal(retrieveEvent.response.itemCount, 1);
+    assert.equal(retrieveEvent.response.contextBlockCount, 1);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
