@@ -9,6 +9,15 @@ export type EmbeddingConfig = Readonly<{
   timeoutMs: number;
 }>;
 
+export type EmbeddingFileConfig = {
+  enabled?: boolean;
+  api_key_env?: string;
+  api_key?: string;
+  baseUrl?: string;
+  model?: string;
+  timeoutMs?: number;
+};
+
 const DEFAULT_EMBEDDING_CONFIG: EmbeddingConfig = {
   enabled: true,
   apiKey: "",
@@ -21,19 +30,14 @@ export function loadEmbeddingConfig(
   memoraxCodeHome: string,
   env: Record<string, string | undefined> = process.env,
 ): EmbeddingConfig {
-  let fileConfig: {
-    enabled?: boolean;
-    apiKey?: string;
-    baseUrl?: string;
-    model?: string;
-    timeoutMs?: number;
-  } = {};
+  let fileConfig: EmbeddingFileConfig = {};
   try {
     const raw = readFileSync(join(memoraxCodeHome, "embedding.json"), "utf8");
     const parsed = JSON.parse(raw) as Record<string, unknown>;
     fileConfig = {
       enabled: typeof parsed.enabled === "boolean" ? parsed.enabled : undefined,
-      apiKey: typeof parsed.api_key === "string" ? parsed.api_key.trim() : undefined,
+      api_key_env: typeof parsed.api_key_env === "string" ? parsed.api_key_env.trim() : undefined,
+      api_key: typeof parsed.api_key === "string" ? parsed.api_key.trim() : undefined,
       baseUrl: typeof parsed.base_url === "string" ? parsed.base_url.trim() : undefined,
       model: typeof parsed.model === "string" ? parsed.model.trim() : undefined,
       timeoutMs: typeof parsed.timeout_ms === "number" && parsed.timeout_ms > 0 ? parsed.timeout_ms : undefined,
@@ -42,10 +46,13 @@ export function loadEmbeddingConfig(
     // File missing or invalid → use defaults
   }
 
-  let apiKey = fileConfig.apiKey ?? "";
-  if (apiKey && /^[A-Z][A-Z0-9_]+$/.test(apiKey)) {
-    apiKey = env[apiKey] ?? "";
-  }
+  // Explicit resolution: api_key_env names an environment variable, api_key
+  // is a literal value, and ARKCODINGPLAN_API_KEY is the built-in default.
+  // The old all-uppercase heuristic is gone: uppercase literal keys are no
+  // longer misread as variable names.
+  let apiKey = fileConfig.api_key_env
+    ? env[fileConfig.api_key_env] ?? ""
+    : fileConfig.api_key ?? "";
   if (!apiKey) {
     apiKey = env.ARKCODINGPLAN_API_KEY ?? "";
   }
@@ -57,46 +64,4 @@ export function loadEmbeddingConfig(
     model: fileConfig.model ?? DEFAULT_EMBEDDING_CONFIG.model,
     timeoutMs: fileConfig.timeoutMs ?? DEFAULT_EMBEDDING_CONFIG.timeoutMs,
   };
-}
-
-export type EmbeddingResult =
-  | { ok: true; vector: Float32Array; dimensions: number; model: string }
-  | { ok: false; error: string };
-
-export async function embedText(
-  text: string,
-  config: EmbeddingConfig,
-  fetchImpl: typeof fetch = fetch,
-): Promise<EmbeddingResult> {
-  if (!config.enabled) return { ok: false, error: "embedding disabled" };
-  if (!config.apiKey) return { ok: false, error: "no api key" };
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), config.timeoutMs);
-  try {
-    const response = await fetchImpl(`${config.baseUrl}/embeddings`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${config.apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ model: config.model, input: text }),
-      signal: controller.signal,
-    });
-    clearTimeout(timer);
-    if (!response.ok) return { ok: false, error: `HTTP ${response.status}` };
-    const body = await response.json() as { data?: Array<{ embedding?: number[] }> };
-    const embedding = body?.data?.[0]?.embedding;
-    if (!Array.isArray(embedding) || embedding.length === 0) {
-      return { ok: false, error: "invalid response format" };
-    }
-    return {
-      ok: true,
-      vector: new Float32Array(embedding),
-      dimensions: embedding.length,
-      model: config.model,
-    };
-  } catch (error) {
-    clearTimeout(timer);
-    return { ok: false, error: error instanceof Error ? error.message : String(error) };
-  }
 }

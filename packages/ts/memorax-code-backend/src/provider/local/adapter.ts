@@ -7,8 +7,9 @@ import type {
 } from "../../memory/observability.js";
 import type { RepositoryMemoryScope } from "../../repository/scope.js";
 import { isRecord } from "../../shared/record.js";
-import { loadEmbeddingConfig, embedText } from "./config.js";
+import { loadEmbeddingConfig } from "./config.js";
 import { embeddingCircuit } from "./health.js";
+import { embedText } from "./embedding.js";
 import { LocalMemoryStore, type StoredMemory } from "./store.js";
 import type {
   MemoraxSlotInvocationRequest,
