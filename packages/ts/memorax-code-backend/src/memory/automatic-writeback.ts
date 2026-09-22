@@ -10,10 +10,8 @@ import {
   memoryWritebackAddParts,
   type WritebackMessage,
 } from "./writeback-chunk.js";
-import {
-  invokeMemoraxMemoryProvider,
-  type MemoraxInvocationFailure,
-} from "../provider/memorax/adapter.js";
+import { invokeMemoryProvider } from "../provider/adapter-dispatch.js";
+import type { MemoraxInvocationFailure } from "../provider/memorax/adapter.js";
 import type {
   MemoryDiagnosticLogger,
   MemoryObservabilityHook,
@@ -400,7 +398,7 @@ async function enqueueAutomaticMemoryWritebackAsync(
     for (const [index, part] of parts.entries()) {
       for (let attempt = 1; attempt <= AUTOMATIC_MEMORY_WRITEBACK_MAX_ATTEMPTS; attempt += 1) {
         const configResult = memoraxConfigFromEnv(options.env);
-        const response = await invokeMemoraxMemoryProvider({
+        const response = await invokeMemoryProvider({
           sessionId: decision.sessionKey,
           prompt: part.messages.find((message) => message.role === "user")?.content ?? "",
         }, {

@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { backendDebug } from "../shared/debug-log.js";
 import { diagnoseMemoryCliFailure, fileErrorFields, memoryCliUnexpectedFailure, type MemoryCliFailureDetails } from "./cli-diagnostics.js";
-import { invokeMemoraxMemoryProvider } from "../provider/memorax/adapter.js";
+import { invokeMemoryProvider } from "../provider/adapter-dispatch.js";
 import type { MemoryObservabilityEvent, MemoryObservabilityHook } from "./observability.js";
 import {
   defaultMemoraxCodeHome,
@@ -152,7 +152,7 @@ async function memorySearch(args: string[], options: MemoryCliOptions): Promise<
   }
   options.diagnosticTrace = repositoryMemory.traceContext;
   const observability = await memoryCliObservability(options.env, repositoryMemory.traceContext);
-  const response = await invokeMemoraxMemoryProvider(
+  const response = await invokeMemoryProvider(
     { sessionId: memoryCliSessionId(args, options.env), prompt: query },
     {
       provider_family: "memory",
@@ -225,7 +225,7 @@ async function memoryAdd(args: string[], options: MemoryCliOptions): Promise<Mem
 
   const sessionId = memoryCliSessionId(args, env);
   const observability = await memoryCliObservability(env, repositoryMemory.traceContext);
-  const response = await invokeMemoraxMemoryProvider(
+  const response = await invokeMemoryProvider(
     { sessionId, prompt: memory },
     {
       provider_family: "memory",

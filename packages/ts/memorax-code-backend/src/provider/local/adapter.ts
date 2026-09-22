@@ -4,38 +4,22 @@ import type { RepositoryMemoryScope } from "../../repository/scope.js";
 import { loadEmbeddingConfig, embedText, type EmbeddingConfig } from "./config.js";
 import { checkEmbeddingHealth } from "./health.js";
 import { LocalMemoryStore } from "./store.js";
+import type {
+  MemoraxSlotInvocationRequest,
+  MemoraxAdapterOptions,
+  MemoraxInvocationResult,
+} from "../memorax/adapter.js";
 
-export type MemoraxRunContext = {
+export type LocalRunContext = {
   sessionId: string;
   branchId?: string;
   prompt: string;
 };
 
-export type MemoraxSlotInvocationRequest = {
-  provider_family?: string;
-  provider_id?: string;
-  slot?: string;
-  operation: string;
-  dispatch?: string;
-  query?: string;
-  content?: string;
-  context?: unknown;
-};
-
-export type MemoraxInvocationResult =
-  | { ok: true; result: Record<string, unknown> }
-  | { ok: false; error: string };
-
-export type LocalAdapterOptions = {
-  env?: Record<string, string | undefined>;
-  repositoryScope?: RepositoryMemoryScope;
-  fetchImpl?: typeof fetch;
-};
-
 export async function invokeLocalMemoryProvider(
-  run: MemoraxRunContext,
+  run: LocalRunContext,
   request: MemoraxSlotInvocationRequest,
-  options: LocalAdapterOptions = {},
+  options: MemoraxAdapterOptions = {},
 ): Promise<MemoraxInvocationResult> {
   const repositoryScope = options.repositoryScope;
   if (!repositoryScope) {
@@ -60,9 +44,9 @@ export async function invokeLocalMemoryProvider(
 
 async function handleWriteback(
   store: LocalMemoryStore,
-  run: MemoraxRunContext,
+  run: LocalRunContext,
   request: MemoraxSlotInvocationRequest,
-  options: LocalAdapterOptions,
+  options: MemoraxAdapterOptions,
   home: string,
 ): Promise<MemoraxInvocationResult> {
   const context = (request.context && typeof request.context === "object" ? request.context : {}) as Record<string, unknown>;
@@ -125,9 +109,9 @@ async function handleWriteback(
 
 async function handleRetrieve(
   store: LocalMemoryStore,
-  run: MemoraxRunContext,
+  run: LocalRunContext,
   request: MemoraxSlotInvocationRequest,
-  options: LocalAdapterOptions,
+  options: MemoraxAdapterOptions,
   home: string,
 ): Promise<MemoraxInvocationResult> {
   const query = typeof request.query === "string" && request.query.trim()
@@ -185,3 +169,4 @@ function formatResults(results: Array<{ content: string; memoryType: string; upd
     },
   };
 }
+

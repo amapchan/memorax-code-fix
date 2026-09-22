@@ -1,4 +1,4 @@
-import { invokeMemoraxMemoryProvider } from "../provider/memorax/adapter.js";
+import { invokeMemoryProvider } from "../provider/adapter-dispatch.js";
 import type {
   MemoryDiagnosticLogger,
   MemoryObservabilityHook,
@@ -77,7 +77,7 @@ export async function retrieveAutomaticMemoryContext(
       AUTOMATIC_MEMORY_CONTEXT_MAX_CHARS,
     ),
   };
-  const response = await invokeMemoraxMemoryProvider({
+  const response = await invokeMemoryProvider({
     sessionId: options.sessionKey?.trim() || "automatic-memory-retrieval",
     prompt: query,
   }, {

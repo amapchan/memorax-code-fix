@@ -28,6 +28,7 @@ export type MemoraxCodeConfig = Readonly<{
     startup_timeout_ms?: number;
   }>;
   memory?: Readonly<{
+    provider?: string;
     retrieval?: Readonly<{
       enabled?: boolean;
       top_k?: number;
@@ -154,6 +155,9 @@ export function renderDefaultMemoraxCodeConfig(): string {
     `# endpoint = "${MEMORAX_DEFAULT_BASE_URL}" # MemoraX service URL.`,
     '# api_key = "" # MemoraX API key used by the local Backend.',
     '# user_id = "" # MemoraX base user ID; requests derive a workspace-scoped namespace.',
+    "",
+    "# Memory provider: local (SQLite + embedding) or memorax (remote API).",
+    'provider = "local"',
     "",
     "# Automatic Hook retrieval is opt-in.",
     "[memory.retrieval]",
@@ -310,6 +314,7 @@ function normalizeMemoraxCodeConfig(value: unknown): MemoraxCodeConfig {
       startup_timeout_ms: numberField(memorax, "startup_timeout_ms"),
     }),
     memory: prune({
+      provider: stringField(memory, "provider"),
       retrieval: prune({
         enabled: booleanField(retrieval, "enabled"),
         top_k: numberField(retrieval, "top_k"),

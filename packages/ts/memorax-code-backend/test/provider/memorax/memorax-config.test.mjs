@@ -75,7 +75,7 @@ test("seeded MemoraX Code config exposes high-signal choices without a tuning ca
   assert.match(config, /capture_content = true # Store content in local Claude trace events\./);
   assert.doesNotMatch(
     config,
-    /\[memory\]\s|provider\s*=|top_k|k_dense|k_sparse|min_score|max_context_chars|max_item_chars|buffer_|chunk_|max_message_chars|timeout_ms|retention_days|max_event_chars|max_file_bytes/,
+    /\[memory\]\s|top_k|k_dense|k_sparse|min_score|max_context_chars|max_item_chars|buffer_|chunk_|max_message_chars|timeout_ms|retention_days|max_event_chars|max_file_bytes/,
   );
 });
 
@@ -412,3 +412,4 @@ test("writeback helper config treats -1 buffer interval as automatic add disable
   assert.equal(status.writeback.writebackEnabled, false);
   assert.equal(status.writeback.writebackBuffer.maxTurns, -1);
 });
+
