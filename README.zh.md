@@ -22,7 +22,7 @@
   <a href="https://code.memorax.net/"><img src="https://img.shields.io/badge/website-code.memorax.net-2563eb" alt="MemoraX Code 产品网站"></a>
   <a href="https://www.npmjs.com/package/@memorax/memorax-code"><img src="https://img.shields.io/npm/v/@memorax/memorax-code.svg" alt="npm 版本"></a>
   <img src="https://img.shields.io/npm/v/@memorax/memorax-code.svg?label=version&color=f59e0b" alt="npm 包版本">
-  <img src="https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white" alt="Node.js 20 或更高版本">
+<img src="https://img.shields.io/badge/node-%3E%3D22.13-339933?logo=node.js&logoColor=white" alt="Node.js 22.13 或更高版本">
 </p>
 
 <p align="center">
@@ -48,7 +48,7 @@ MemoraX Code 让 Codex、Claude Code、CodeBuddy CLI、WorkBuddy、DeepSeek Harn
 
 ## 快速开始
 
-开始前，请确保已安装 Node.js 20 或更高版本（推荐 Node.js 24 LTS），以及 Codex、Claude Code、
+开始前，请确保已安装 Node.js 22.13 或更高版本（内置 SQLite 模块需要该版本；推荐 Node.js 24 LTS），以及 Codex、Claude Code、
 CodeBuddy CLI、WorkBuddy、DeepSeek Harness、OpenCode 或 Trae 中的至少一个。
 
 当前 DeepSeek Harness（DSH）版本要求 Node.js `^22.19.0 || >=24.0.0`。运行 setup 前，

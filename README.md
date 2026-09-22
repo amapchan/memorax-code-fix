@@ -22,7 +22,7 @@
   <a href="https://code.memorax.net/"><img src="https://img.shields.io/badge/website-code.memorax.net-2563eb" alt="MemoraX Code website"></a>
   <a href="https://www.npmjs.com/package/@memorax/memorax-code"><img src="https://img.shields.io/npm/v/@memorax/memorax-code.svg" alt="npm version"></a>
   <img src="https://img.shields.io/npm/v/@memorax/memorax-code.svg?label=version&color=f59e0b" alt="npm package version">
-  <img src="https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white" alt="Node.js 20 or newer">
+<img src="https://img.shields.io/badge/node-%3E%3D22.13-339933?logo=node.js&logoColor=white" alt="Node.js 22.13 or newer">
 </p>
 
 <p align="center">
@@ -52,7 +52,8 @@ and validation sooner.
 
 ## Quick Start
 
-Prepare Node.js 20+ (Node.js 24 LTS recommended) and at least one of Codex,
+Prepare Node.js 22.13+ (the built-in SQLite module requires it; Node.js 24 LTS
+recommended) and at least one of Codex,
 Claude Code, CodeBuddy CLI, WorkBuddy, DeepSeek Harness, OpenCode, or Trae.
 
 For DeepSeek Harness (DSH), current releases require Node.js

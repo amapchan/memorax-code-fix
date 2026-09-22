@@ -16,7 +16,7 @@
     "test": "npm run build && node --test --test-timeout=5000 --test-force-exit \"test/**/*.test.mjs\""
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
+    "@types/node": "^22.0.0",
     "typescript": "^5.9.0"
   },
   "dependencies": {
