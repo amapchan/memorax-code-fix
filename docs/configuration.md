@@ -420,9 +420,60 @@ Turn or maintain a pending queue. The Skill can still perform explicit Repo
 Memory work, but automatic background Repo Memory jobs are unavailable in
 Trae until the client provides a suitable headless worker.
 
-## MemoraX connection
+## Memory provider
 
-MemoraX is the required remote-memory service:
+Memory operations route through a provider selected by priority:
+`MEMORAX_CODE_MEMORY_PROVIDER` environment variable, then `[memory].provider`
+in `config.toml`, then the default `local`.
+
+```toml
+[memory]
+# provider = "local"   # local (default) or memorax (opt-in remote)
+```
+
+### Local provider (default)
+
+The local provider stores memory in a single SQLite file,
+`~/.memorax-code/local-memory.db`. Retrieval is hybrid: vector similarity over
+stored embeddings fused with SQLite FTS5 keyword search (BM25 ranking,
+trigram tokenizer, with substring fallback for queries shorter than three
+characters). Recall covers the current repository scope plus global memories;
+standalone CLI search covers all memories for the user. Requires Node.js
+`>=22.13` for the built-in `node:sqlite` module.
+
+Embedding vectors come from an OpenAI-compatible `/embeddings` endpoint
+configured in `~/.memorax-code/embedding.json`. The endpoint computes vectors
+only; it never stores memory content.
+
+```json
+{
+  "enabled": true,
+  "api_key_env": "ARKCODINGPLAN_API_KEY",
+  "base_url": "https://ark.cn-beijing.volces.com/api/coding/v3",
+  "model": "doubao-embedding-vision",
+  "timeout_ms": 5000
+}
+```
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `enabled` | no | default `true`; `false` disables embedding entirely |
+| `api_key_env` | no | names an environment variable holding the API key; takes priority over `api_key` |
+| `api_key` | no | literal API key value; uppercase literals are used verbatim |
+| `base_url` | no | default Ark endpoint; any OpenAI-compatible `/embeddings` service |
+| `model` | no | default `doubao-embedding-vision` |
+| `timeout_ms` | no | default `5000` ms |
+
+With no key, embedding stays disabled and retrieval uses keyword search only.
+When the first embedding call fails, a process-lifetime circuit breaker keeps
+the process on keyword search until restart; the CLI re-probes on its next
+invocation. Rows written without embeddings stay searchable by keyword and
+gain vectors when rewritten.
+
+### MemoraX provider (opt-in)
+
+Set `[memory].provider = "memorax"` or
+`MEMORAX_CODE_MEMORY_PROVIDER=memorax` to use the remote service:
 
 ```toml
 [memorax]

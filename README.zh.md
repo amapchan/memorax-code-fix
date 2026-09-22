@@ -70,6 +70,12 @@ npm install -g @memorax/memorax-code
 此命令只安装包，不会启动交互式安装引导。请勿使用 `--ignore-scripts`：替换包时，npm 生命周期
 脚本会安全停止并恢复已有的运行中托管 Backend。
 
+> [!NOTE]
+> 记忆功能默认完全本地运行：记忆保存在本机 `~/.memorax-code/` 下的 SQLite
+> 数据库中，关键词检索无需账号或 API Key。可选的 Embedding 端点（语义向量
+> 检索）可稍后在 `~/.memorax-code/embedding.json` 中配置。只有启用远程
+> provider 时才需要 MemoraX 账号。
+
 #### 2. 注册或接入 MemoraX 账号（推荐）
 
 前往 [MemoraX](https://platform.memorax.net/) 注册账号；已有账号可直接使用，然后在正常的交互式终端中运行：

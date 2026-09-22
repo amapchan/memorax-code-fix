@@ -78,6 +78,13 @@ This installs the package; it does not start interactive setup. Do not use
 `--ignore-scripts`: npm lifecycle scripts safely stop and restore an existing
 running managed Backend during package replacement.
 
+> [!NOTE]
+> Memory works fully locally by default: memories are stored in a SQLite
+> database under `~/.memorax-code/` on your machine, and keyword search needs
+> no account or API key. The optional embedding endpoint (semantic vector
+> search) can be configured later in `~/.memorax-code/embedding.json`. A
+> MemoraX account is only required for the opt-in remote provider.
+
 #### 2. Connect a MemoraX Account (Recommended)
 
 [Create a MemoraX account](https://platform.memorax.net/) or use an existing

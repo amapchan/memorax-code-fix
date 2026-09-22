@@ -67,8 +67,10 @@ flowchart LR
   Npm["npm package sources<br/>wrappers and manifest"]
   Build["scripts<br/>build, stage, materialize"]
   Artifact["assembled npm artifact<br/>installed CLI"]
-  MemoraX["MemoraX memory API"]
+  MemoraX["MemoraX memory API<br/>(opt-in remote provider)"]
+  Embedding["Embedding API<br/>(vector computation only)"]
   Local["local runtime state<br/>trace and lifecycle records"]
+  LocalMemory["local-memory.db<br/>SQLite memory store"]
 
   Npm --> Build
   Backend -. "compiled runtime source" .-> Build
@@ -107,8 +109,12 @@ flowchart LR
   TraeAdapter -. "versioned local Hook HTTP" .-> Service
 
   Clients -->|"shared Skill via client shell"| MemoryCLI
-  Service -->|"automatic Search/Add"| MemoraX
-  MemoryCLI -->|"explicit Search/Add"| MemoraX
+  Service -->|"provider dispatch"| LocalMemory
+  MemoryCLI -->|"provider dispatch"| LocalMemory
+  Service -->|"Search/Add when memorax selected"| MemoraX
+  MemoryCLI -->|"Search/Add when memorax selected"| MemoraX
+  Service -.->|"text to embed, opt-in"| Embedding
+  MemoryCLI -.->|"text to embed, opt-in"| Embedding
   Service --> Local
   MemoryCLI --> Local
 ```
@@ -848,6 +854,7 @@ entrypoints and compatibility facades. It is not another implementation area.
 | `src/repo-memory` | Repo Memory preparation, local and provider facet collection, delta detection, and bundle validation | Prepares bundle directories and the repository ignore entry, collects raw evidence, and validates output; agents author durable Markdown memory |
 | `src/repository` | Read-only repository identity | Scope derivation does not execute Git or use synchronous filesystem reads |
 | `src/provider/memorax` | MemoraX config interpretation, Search/Add payloads, HTTP transport, and normalized results | Independent from server routing and plugin lifecycle |
+| `src/provider/local` | Provider dispatch, SQLite store, hybrid FTS5/vector retrieval, embedding client, and embedding circuit breaker | MemoraX requests, trace storage, or direct route composition |
 | `src/trace` | Client-qualified trace config/context/store, current-turn state, retention, and JSONL persistence | Trace core has no outbound-network authority |
 | `src/config` | Backend, MemoraX Code, and proxy environment/config interpretation | Configuration parsing stays independent of route composition |
 | `src/shared` | Narrow utilities such as JSONL append, record guards, debug logging, and Windows invocation | Not a dumping ground for business types or policy |
@@ -1037,9 +1044,16 @@ publication. Its legacy directory lock retains the same path and blocks new
 acquisition until released; an unprovable abandoned directory is not removed
 based on age. Pending schema, correlation, and pruning remain client-owned.
 
-Backend-owned remote memory state is limited to MemoraX memories and Add tasks.
-The provider adapter is the network boundary for documented memory payloads;
-the Backend does not poll an Add task after its initial response.
+In the default local mode the memory provider owns durable `local-memory.db` (a
+single SQLite file under `MEMORAX_CODE_HOME`) shared by the Backend and the
+`memorax-cli` processes. SQLite's WAL journaling and busy timeout satisfy the
+cross-process read/modify/write invariant without additional locking. When the
+opt-in `memorax` provider is selected, Backend-owned remote memory state is
+limited to MemoraX memories and Add tasks; the provider adapter is the network
+boundary for documented memory payloads, and the Backend does not poll an Add
+task after its initial response. The embedding endpoint is the only other
+outbound memory path: it receives the text to embed, stores nothing, and can be
+disabled in configuration.
 
 The runtime composition root owns bounded graceful shutdown. It closes HTTP
 intake, waits for active requests, and then drains the memory service and
@@ -1100,10 +1114,13 @@ Raw native transcript files, transcript paths, and retained trace files stay
 local. Only normalized Search and Add requests cross the MemoraX
 provider boundary. An Add request may carry messages materialized from the
 exact native Turn, but it does not upload the raw file or unrelated transcript
-content. A production module that gains network capability must be explicitly
-reviewed by the local-only gate; trace-core modules must remain network-free,
-and a module must not combine trace storage with outbound authority without a
-reviewed contract.
+content. In local mode the provider additionally sends the text to embed to the
+configured OpenAI-compatible embeddings endpoint; that reviewed outbound
+exception computes vectors only, stores nothing, and is user-disableable. A
+production module that gains network capability must be explicitly reviewed by
+the local-only gate; trace-core modules must remain network-free, and a module
+must not combine trace storage with outbound authority without a reviewed
+contract.
 
 For DSH, Cordis `turn/start` establishes only live trace identity. After
 `turn/end`, the adapter flushes persistence and supplies the exact native Turn
@@ -1197,6 +1214,7 @@ paths are used below unless a different package or the repository root is named.
 | `src/repo-memory` | Repository-root `test/shared-skill/repo-memory-builder*.test.mjs` and `repo-memory-updater.test.mjs` through the canonical Skill launcher |
 | `src/personal-memory` | `test/personal-memory`; canonical Skill launcher integration in repository-root `test/shared-skill` |
 | `src/provider/memorax` | `test/provider/memorax` |
+| `src/provider/local` | `test/provider/local` |
 | `src/repository` | `test/repository` |
 | `src/shared` | `test/shared` |
 | `src/trace` | `test/trace` |

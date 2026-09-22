@@ -231,6 +231,16 @@ the product creates or tightens the home to mode `0700` and newly seeded
 configuration to mode `0600`; Windows relies on the current user's filesystem
 ACLs.
 
+In the default local memory mode, `MEMORAX_CODE_HOME` also contains
+`local-memory.db`, a single SQLite file storing memory content, optional
+embedding vectors, scope metadata, and idempotency keys. It is shared by the
+Backend and `memorax-cli` processes; SQLite WAL journaling and its busy timeout
+protect concurrent access. The configured embeddings endpoint is the only
+outbound memory call in local mode: it receives the text to embed for vector
+computation, stores nothing, and can be disabled in the embedding
+configuration. When it is disabled or unreachable, retrieval degrades to local
+keyword search and no memory content leaves the machine through this path.
+
 Shared state locks exclusively create a private lock file and write its
 process-qualified owner record before entering a critical section. A failed
 owner-record write does not permit the protected operation. Incomplete records
