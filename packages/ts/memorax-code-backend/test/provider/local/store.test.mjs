@@ -79,3 +79,48 @@ test("searchByVector returns nearest memories by cosine similarity", async () =>
     await rm(dir, { recursive: true, force: true });
   }
 });
+
+test("opens database with WAL journal mode and busy timeout", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "memorax-store-"));
+  try {
+    const store = new LocalMemoryStore(join(dir, "test.db"));
+    assert.equal(store.db.prepare("PRAGMA journal_mode").get().journal_mode, "wal");
+    assert.equal(store.db.prepare("PRAGMA busy_timeout").get().timeout, 2000);
+    store.close();
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("embedding BLOB written from a pooled buffer view round-trips exactly", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "memorax-store-"));
+  try {
+    const store = new LocalMemoryStore(join(dir, "test.db"));
+    const scope = testScope();
+    const pooled = new Float32Array([1, 0, 0, 9, 9, 9]);
+    const view = new Float32Array(pooled.buffer, 0, 3);
+    store.insertMemory({
+      scope,
+      content: "pooled view",
+      memoryType: "semantic",
+      idempotencyKey: "pool-key-1",
+      sessionId: "s1",
+      embedding: Buffer.from(view.buffer, view.byteOffset, view.byteLength),
+      embeddingDimensions: 3,
+      embeddingModel: "test",
+    });
+    const results = store.searchByVector({
+      scope,
+      queryVector: new Float32Array([1, 0, 0]),
+      topK: 2,
+      minScore: 0,
+    });
+    assert.equal(results.length, 1);
+    assert.ok(results[0].score > 0.99, `expected aligned score, got ${results[0].score}`);
+    assert.equal(results[0].embeddingDimensions, 3);
+    assert.equal(results[0].embedding.length, 12, "BLOB must contain only the vector bytes");
+    store.close();
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});

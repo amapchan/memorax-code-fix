@@ -32,6 +32,10 @@ export class LocalMemoryStore {
 
   constructor(dbPath: string) {
     this.db = new DatabaseSync(dbPath);
+    // WAL + busy_timeout make concurrent access from the Backend and the
+    // memorax-cli process safe without additional cross-process locking.
+    this.db.exec("PRAGMA journal_mode=WAL;");
+    this.db.exec("PRAGMA busy_timeout=2000;");
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS memories (
         id TEXT PRIMARY KEY,
@@ -64,7 +68,8 @@ export class LocalMemoryStore {
     `).run(
       id, params.scope.effectiveUserId, params.scope.repositorySlug,
       params.content, params.memoryType,
-      params.embedding, params.embeddingDimensions, params.embeddingModel,
+      params.embedding ? Buffer.from(params.embedding) : null,
+      params.embeddingDimensions, params.embeddingModel,
       params.sessionId ?? null, params.idempotencyKey, now, now,
     );
     return id;
@@ -97,7 +102,10 @@ export class LocalMemoryStore {
     const scored = rows.map((row) => {
       const r = row as Record<string, unknown>;
       const emb = r.embedding as Buffer;
-      const vec = new Float32Array(emb.buffer, emb.byteOffset, emb.byteLength / 4);
+      // Copy before viewing: node:sqlite may return buffers at offsets that
+      // are not 4-byte aligned, and the view must not alias SQLite's memory.
+      const copy = Buffer.from(emb);
+      const vec = new Float32Array(copy.buffer, copy.byteOffset, copy.byteLength / 4);
       return { ...this.rowToMemory(r), score: cosineSimilarity(input.queryVector, vec) };
     }).filter((r) => input.minScore === undefined || r.score! >= input.minScore);
     scored.sort((a, b) => b.score! - a.score!);
@@ -113,7 +121,7 @@ export class LocalMemoryStore {
       id: row.id as string,
       content: row.content as string,
       memoryType: row.memory_type as string,
-      embedding: (row.embedding as Buffer) ?? null,
+      embedding: row.embedding ? Buffer.from(row.embedding as Buffer) : null,
       embeddingDimensions: (row.embedding_dimensions as number) ?? null,
       embeddingModel: (row.embedding_model as string) ?? null,
       createdAt: row.created_at as number,
