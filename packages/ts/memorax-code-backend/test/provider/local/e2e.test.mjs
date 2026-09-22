@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { invokeMemoryProvider } from "../../../dist/provider/adapter-dispatch.js";
 
 const ARK_KEY = process.env.ARKCODINGPLAN_API_KEY;
+const LIVE = process.env.MEMORAX_CODE_LIVE_EMBEDDING_TEST === "1" && ARK_KEY;
 
 function testScope() {
   return { schemaVersion: "workspace-memory-scope.v1", baseUserId: "e2e-user",
@@ -15,11 +16,15 @@ function testScope() {
     boundWorkspaceRoot: "/e2e" };
 }
 
-function opts(home, scope) {
-  return { env: { MEMORAX_CODE_HOME: home, ...(ARK_KEY ? { ARKCODINGPLAN_API_KEY: ARK_KEY } : {}) }, repositoryScope: scope };
+function opts(home, scope, extraEnv = {}, fetchImpl) {
+  return {
+    env: { MEMORAX_CODE_HOME: home, ...(ARK_KEY ? { ARKCODINGPLAN_API_KEY: ARK_KEY } : {}), ...extraEnv },
+    repositoryScope: scope,
+    ...(fetchImpl ? { fetchImpl } : {}),
+  };
 }
 
-test("E2E: writeback, retrieve, idempotency, vector search", { skip: !ARK_KEY }, async () => {
+test("E2E: writeback, retrieve, idempotency, vector search", { skip: !LIVE }, async () => {
   const dir = await mkdtemp(join(tmpdir(), "memorax-e2e-"));
   try {
     const scope = testScope();
@@ -67,6 +72,43 @@ test("E2E: writeback, retrieve, idempotency, vector search", { skip: !ARK_KEY },
     );
     assert.ok(final.ok);
     assert.equal(final.result.tool_result_payload.items.length, 1);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("E2E: synthetic vector search via injected fetch", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "memorax-e2e-stub-"));
+  try {
+    const scope = testScope();
+    const deterministicVector = (text) => {
+      const vec = new Array(8).fill(0);
+      for (const word of text.toLowerCase().split(/\W+/)) {
+        vec[word.length % 8] += 1;
+      }
+      return vec;
+    };
+    const fetchImpl = async (url, init) => {
+      const body = JSON.parse(init.body);
+      return { ok: true, status: 200, json: async () => ({ data: [{ embedding: deterministicVector(body.input) }] }) };
+    };
+    const write = await invokeMemoryProvider(
+      { sessionId: "s1", prompt: "seed" },
+      { provider_id: "memory.memorax", slot: "state_context", operation: "writeback",
+        context: { idempotencyKey: "stub-wb-1",
+          messages: [{ role: "assistant", content: "Kubernetes deployments roll out pods gradually." }] } },
+      opts(dir, scope, {}, fetchImpl),
+    );
+    assert.ok(write.ok, `writeback failed: ${write.ok ? "" : write.error}`);
+
+    const search = await invokeMemoryProvider(
+      { sessionId: "s1", prompt: "kubernetes" },
+      { provider_id: "memory.memorax", slot: "state_context", operation: "retrieve", query: "kubernetes deployment rollout" },
+      opts(dir, scope, {}, fetchImpl),
+    );
+    assert.ok(search.ok);
+    assert.ok(search.result.tool_result_payload.items.length > 0);
+    assert.ok(search.result.tool_result_payload.items[0].memory.includes("Kubernetes"));
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

@@ -63,13 +63,17 @@ export type EmbeddingResult =
   | { ok: true; vector: Float32Array; dimensions: number; model: string }
   | { ok: false; error: string };
 
-export async function embedText(text: string, config: EmbeddingConfig): Promise<EmbeddingResult> {
+export async function embedText(
+  text: string,
+  config: EmbeddingConfig,
+  fetchImpl: typeof fetch = fetch,
+): Promise<EmbeddingResult> {
   if (!config.enabled) return { ok: false, error: "embedding disabled" };
   if (!config.apiKey) return { ok: false, error: "no api key" };
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), config.timeoutMs);
   try {
-    const response = await fetch(`${config.baseUrl}/embeddings`, {
+    const response = await fetchImpl(`${config.baseUrl}/embeddings`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${config.apiKey}`,

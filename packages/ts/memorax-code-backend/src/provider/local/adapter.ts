@@ -64,9 +64,9 @@ async function handleWriteback(
   let dims: number | null = null;
   let model: string | null = null;
   if (embedConfig.enabled && embedConfig.apiKey) {
-    const healthy = await checkEmbeddingHealth(embedConfig);
+    const healthy = await checkEmbeddingHealth(embedConfig, options.fetchImpl);
     if (healthy) {
-      const embedResult = await embedText(content.slice(0, 512), embedConfig);
+      const embedResult = await embedText(content.slice(0, 512), embedConfig, options.fetchImpl);
       if (embedResult.ok) {
         embeddingBuf = Buffer.from(embedResult.vector.buffer, embedResult.vector.byteOffset, embedResult.vector.byteLength);
         dims = embedResult.dimensions;
@@ -122,9 +122,9 @@ async function handleRetrieve(
   const topK = 6;
 
   if (embedConfig.enabled && embedConfig.apiKey) {
-    const healthy = await checkEmbeddingHealth(embedConfig);
+    const healthy = await checkEmbeddingHealth(embedConfig, options.fetchImpl);
     if (healthy) {
-      const embedResult = await embedText(query, embedConfig);
+      const embedResult = await embedText(query, embedConfig, options.fetchImpl);
       if (embedResult.ok) {
         const results = store.searchByVector({
           scope: options.repositoryScope!,
