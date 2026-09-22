@@ -3,7 +3,8 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { loadEmbeddingConfig, embedText } from "../../../dist/provider/local/config.js";
+import { loadEmbeddingConfig } from "../../../dist/provider/local/config.js";
+import { embedText } from "../../../dist/provider/local/embedding.js";
 
 const ARK_KEY = process.env.ARKCODINGPLAN_API_KEY;
 const LIVE = process.env.MEMORAX_CODE_LIVE_EMBEDDING_TEST === "1" && ARK_KEY;
@@ -26,6 +27,16 @@ function stubFetch(status, body) {
   });
 }
 
+async function withEmbeddingFile(json, run) {
+  const dir = await mkdtemp(join(tmpdir(), "memorax-embed-"));
+  try {
+    await writeFile(join(dir, "embedding.json"), JSON.stringify(json));
+    return await run(dir);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+}
+
 test("loadEmbeddingConfig returns defaults when file missing", () => {
   const config = loadEmbeddingConfig("/nonexistent/path");
   assert.ok(config);
@@ -36,30 +47,58 @@ test("loadEmbeddingConfig returns defaults when file missing", () => {
 });
 
 test("loadEmbeddingConfig reads custom values from file", async () => {
-  const dir = await mkdtemp(join(tmpdir(), "memorax-embed-"));
-  try {
-    await writeFile(join(dir, "embedding.json"), JSON.stringify({
-      enabled: false,
-      api_key: "custom-key",
-      base_url: "http://custom:8080",
-      model: "custom-model",
-      timeout_ms: 2000,
-    }));
+  await withEmbeddingFile({
+    enabled: false,
+    api_key: "custom-key",
+    base_url: "http://custom:8080",
+    model: "custom-model",
+    timeout_ms: 2000,
+  }, async (dir) => {
     const config = loadEmbeddingConfig(dir);
     assert.equal(config.enabled, false);
     assert.equal(config.apiKey, "custom-key");
     assert.equal(config.baseUrl, "http://custom:8080");
     assert.equal(config.model, "custom-model");
     assert.equal(config.timeoutMs, 2000);
-  } finally {
-    await rm(dir, { recursive: true, force: true });
-  }
+  });
 });
 
 test("loadEmbeddingConfig resolves env var name in api_key", () => {
   const env = { ARKCODINGPLAN_API_KEY: "resolved-value", MEMORAX_CODE_HOME: "" };
   const config = loadEmbeddingConfig("/tmp/fake-home-for-env-test", env);
   assert.equal(config.apiKey, "resolved-value");
+});
+
+test("loadEmbeddingConfig resolves explicit api_key_env field", async () => {
+  await withEmbeddingFile({ api_key_env: "MY_CUSTOM_KEY" }, async (dir) => {
+    const config = loadEmbeddingConfig(dir, { MY_CUSTOM_KEY: "custom-resolved" });
+    assert.equal(config.apiKey, "custom-resolved");
+  });
+});
+
+test("api_key_env takes priority over literal api_key", async () => {
+  await withEmbeddingFile({
+    api_key_env: "MY_CUSTOM_KEY",
+    api_key: "ALLCAPS_LITERAL",
+  }, async (dir) => {
+    const env = { MY_CUSTOM_KEY: "from-env", ARKCODINGPLAN_API_KEY: "fallback" };
+    const config = loadEmbeddingConfig(dir, env);
+    assert.equal(config.apiKey, "from-env");
+  });
+});
+
+test("all-uppercase literal api_key is used verbatim", async () => {
+  await withEmbeddingFile({ api_key: "ALLCAPS_LITERAL" }, async (dir) => {
+    const config = loadEmbeddingConfig(dir, { ARKCODINGPLAN_API_KEY: "fallback" });
+    assert.equal(config.apiKey, "ALLCAPS_LITERAL");
+  });
+});
+
+test("empty resolved api_key_env falls back to ARKCODINGPLAN_API_KEY", async () => {
+  await withEmbeddingFile({ api_key_env: "MY_CUSTOM_KEY" }, async (dir) => {
+    const config = loadEmbeddingConfig(dir, { MY_CUSTOM_KEY: "", ARKCODINGPLAN_API_KEY: "fallback" });
+    assert.equal(config.apiKey, "fallback");
+  });
 });
 
 test("embedText uses injected fetch and parses vector", async () => {
