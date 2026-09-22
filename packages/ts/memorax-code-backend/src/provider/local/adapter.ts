@@ -130,7 +130,7 @@ async function handleRetrieve(
           scope: options.repositoryScope!,
           queryVector: embedResult.vector,
           topK,
-          minScore: 0.3,
+          minScore: 0.1,
         });
         if (results.length > 0) return formatResults(results);
       }
