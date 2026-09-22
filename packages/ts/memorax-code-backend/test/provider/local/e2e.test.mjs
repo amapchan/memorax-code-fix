@@ -97,14 +97,14 @@ test("E2E: synthetic vector search via injected fetch", async () => {
       { provider_id: "memory.memorax", slot: "state_context", operation: "writeback",
         context: { idempotencyKey: "stub-wb-1",
           messages: [{ role: "assistant", content: "Kubernetes deployments roll out pods gradually." }] } },
-      opts(dir, scope, {}, fetchImpl),
+      opts(dir, scope, { ARKCODINGPLAN_API_KEY: "stub-e2e-key" }, fetchImpl),
     );
     assert.ok(write.ok, `writeback failed: ${write.ok ? "" : write.error}`);
 
     const search = await invokeMemoryProvider(
       { sessionId: "s1", prompt: "kubernetes" },
       { provider_id: "memory.memorax", slot: "state_context", operation: "retrieve", query: "kubernetes deployment rollout" },
-      opts(dir, scope, {}, fetchImpl),
+      opts(dir, scope, { ARKCODINGPLAN_API_KEY: "stub-e2e-key" }, fetchImpl),
     );
     assert.ok(search.ok);
     assert.ok(search.result.tool_result_payload.items.length > 0);

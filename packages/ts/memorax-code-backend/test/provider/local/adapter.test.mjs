@@ -21,7 +21,7 @@ function testScope(baseUserId = "user-1", slug = "test-repo") {
 
 function adapterOptions(home, scope) {
   return {
-    env: { MEMORAX_CODE_HOME: home },
+    env: { MEMORAX_CODE_HOME: home, ARKCODINGPLAN_API_KEY: "" },
     repositoryScope: scope,
   };
 }
@@ -120,6 +120,48 @@ test("duplicate idempotency key accepted without storing twice", async () => {
     );
     assert.ok(search.ok);
     assert.equal(search.result.tool_result_payload.items.length, 1);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("failing embed opens circuit: keyword fallback without re-probe", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "memorax-adapter-circuit-"));
+  try {
+    const scope = testScope();
+    let fetchCalls = 0;
+    const fetchImpl = async () => {
+      fetchCalls += 1;
+      return { ok: false, status: 500, json: async () => ({}) };
+    };
+    const circuitOpts = {
+      env: { MEMORAX_CODE_HOME: dir, ARKCODINGPLAN_API_KEY: "stub-circuit-key" },
+      repositoryScope: scope,
+      fetchImpl,
+    };
+    await invokeLocalMemoryProvider(
+      { sessionId: "s1", prompt: "seed" },
+      { provider_id: "memory.local", slot: "state_context", operation: "writeback",
+        context: { idempotencyKey: "circuit-wb-1",
+          messages: [{ role: "assistant", content: "Uses Docker for builds." }] } },
+      circuitOpts,
+    );
+    assert.equal(fetchCalls, 1, "writeback should probe exactly once");
+    const first = await invokeLocalMemoryProvider(
+      { sessionId: "s1", prompt: "Docker" },
+      { provider_id: "memory.local", slot: "state_context", operation: "retrieve", query: "Docker" },
+      circuitOpts,
+    );
+    assert.ok(first.ok);
+    assert.ok(first.result.tool_result_payload.items.length > 0);
+    assert.equal(fetchCalls, 1, "open circuit must not re-probe");
+    const second = await invokeLocalMemoryProvider(
+      { sessionId: "s1", prompt: "Docker" },
+      { provider_id: "memory.local", slot: "state_context", operation: "retrieve", query: "Docker" },
+      circuitOpts,
+    );
+    assert.ok(second.ok);
+    assert.equal(fetchCalls, 1, "open circuit must not re-probe on later operations");
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

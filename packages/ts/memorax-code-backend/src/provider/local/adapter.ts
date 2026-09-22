@@ -2,7 +2,7 @@ import { join } from "node:path";
 import { defaultMemoraxCodeHome } from "../../config/memorax-code.js";
 import type { RepositoryMemoryScope } from "../../repository/scope.js";
 import { loadEmbeddingConfig, embedText, type EmbeddingConfig } from "./config.js";
-import { checkEmbeddingHealth } from "./health.js";
+import { embeddingCircuit } from "./health.js";
 import { LocalMemoryStore } from "./store.js";
 import type {
   MemoraxSlotInvocationRequest,
@@ -63,15 +63,15 @@ async function handleWriteback(
   let embeddingBuf: Buffer | null = null;
   let dims: number | null = null;
   let model: string | null = null;
-  if (embedConfig.enabled && embedConfig.apiKey) {
-    const healthy = await checkEmbeddingHealth(embedConfig, options.fetchImpl);
-    if (healthy) {
-      const embedResult = await embedText(content.slice(0, 512), embedConfig, options.fetchImpl);
-      if (embedResult.ok) {
-        embeddingBuf = Buffer.from(embedResult.vector.buffer, embedResult.vector.byteOffset, embedResult.vector.byteLength);
-        dims = embedResult.dimensions;
-        model = embedResult.model;
-      }
+  if (embedConfig.enabled && embedConfig.apiKey && !embeddingCircuit.isOpen(embedConfig)) {
+    const embedResult = await embedText(content.slice(0, 512), embedConfig, options.fetchImpl);
+    if (embedResult.ok) {
+      embeddingCircuit.recordSuccess(embedConfig);
+      embeddingBuf = Buffer.from(embedResult.vector.buffer, embedResult.vector.byteOffset, embedResult.vector.byteLength);
+      dims = embedResult.dimensions;
+      model = embedResult.model;
+    } else {
+      embeddingCircuit.recordFailure(embedConfig);
     }
   }
 
@@ -121,19 +121,19 @@ async function handleRetrieve(
   const embedConfig = loadEmbeddingConfig(home, options.env);
   const topK = 6;
 
-  if (embedConfig.enabled && embedConfig.apiKey) {
-    const healthy = await checkEmbeddingHealth(embedConfig, options.fetchImpl);
-    if (healthy) {
-      const embedResult = await embedText(query, embedConfig, options.fetchImpl);
-      if (embedResult.ok) {
-        const results = store.searchByVector({
-          scope: options.repositoryScope!,
-          queryVector: embedResult.vector,
-          topK,
-          minScore: 0.1,
-        });
-        if (results.length > 0) return formatResults(results);
-      }
+  if (embedConfig.enabled && embedConfig.apiKey && !embeddingCircuit.isOpen(embedConfig)) {
+    const embedResult = await embedText(query, embedConfig, options.fetchImpl);
+    if (embedResult.ok) {
+      embeddingCircuit.recordSuccess(embedConfig);
+      const results = store.searchByVector({
+        scope: options.repositoryScope!,
+        queryVector: embedResult.vector,
+        topK,
+        minScore: 0.1,
+      });
+      if (results.length > 0) return formatResults(results);
+    } else {
+      embeddingCircuit.recordFailure(embedConfig);
     }
   }
 

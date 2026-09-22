@@ -1,47 +1,56 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { checkEmbeddingHealth } from "../../../dist/provider/local/health.js";
+import { embeddingCircuit } from "../../../dist/provider/local/health.js";
 
 const ARK_KEY = process.env.ARKCODINGPLAN_API_KEY;
 const LIVE = process.env.MEMORAX_CODE_LIVE_EMBEDDING_TEST === "1" && ARK_KEY;
 
-function liveConfig() {
+function stubConfig(apiKey = "stub") {
   return {
-    enabled: true, apiKey: ARK_KEY,
+    enabled: true, apiKey,
     baseUrl: "https://ark.cn-beijing.volces.com/api/coding/v3",
     model: "doubao-embedding-vision", timeoutMs: 5000,
   };
 }
 
-test("health check returns true for valid Ark API", { skip: !LIVE }, async () => {
-  const result = await checkEmbeddingHealth(liveConfig());
-  assert.equal(result, true);
+test("circuit starts closed and opens on first failure for the process", () => {
+  embeddingCircuit.resetForTests();
+  const config = stubConfig();
+  assert.equal(embeddingCircuit.isOpen(config), false);
+  embeddingCircuit.recordFailure(config);
+  assert.equal(embeddingCircuit.isOpen(config), true);
 });
 
-test("health check returns true via stub fetch", async () => {
-  const calls = [];
-  const fetchImpl = async (...args) => {
-    calls.push(args);
-    return { ok: true, status: 200, json: async () => ({ data: [{ embedding: [1] }] }) };
-  };
-  const result = await checkEmbeddingHealth({ ...liveConfig(), apiKey: "stub" }, fetchImpl);
-  assert.equal(result, true);
-  assert.equal(calls.length, 1);
+test("circuit failure persists across separate config instances with same settings", () => {
+  embeddingCircuit.resetForTests();
+  embeddingCircuit.recordFailure(stubConfig("same-key"));
+  assert.equal(embeddingCircuit.isOpen(stubConfig("same-key")), true);
 });
 
-test("health check returns false when all attempts fail", async () => {
-  const calls = [];
-  const fetchImpl = async (...args) => {
-    calls.push(args);
-    return { ok: false, status: 500, json: async () => ({}) };
-  };
-  const result = await checkEmbeddingHealth({ ...liveConfig(), apiKey: "stub" }, fetchImpl);
-  assert.equal(result, false);
-  assert.equal(calls.length, 3);
+test("circuit success keeps or returns the circuit closed", () => {
+  embeddingCircuit.resetForTests();
+  const config = stubConfig();
+  embeddingCircuit.recordSuccess(config);
+  assert.equal(embeddingCircuit.isOpen(config), false);
+  embeddingCircuit.recordFailure(config);
+  embeddingCircuit.recordSuccess(config);
+  assert.equal(embeddingCircuit.isOpen(config), false);
 });
 
-test("health check returns false when disabled", async () => {
+test("circuit is per resolved config fingerprint", () => {
+  embeddingCircuit.resetForTests();
+  embeddingCircuit.recordFailure(stubConfig("key-a"));
+  assert.equal(embeddingCircuit.isOpen(stubConfig("key-b")), false);
+});
+
+test("disabled config never probes and reports open", () => {
   const config = { enabled: false, apiKey: "", baseUrl: "", model: "", timeoutMs: 100 };
-  const result = await checkEmbeddingHealth(config);
-  assert.equal(result, false);
+  assert.equal(embeddingCircuit.isOpen(config), true);
+});
+
+test("resetForTests clears all circuit state", () => {
+  embeddingCircuit.resetForTests();
+  embeddingCircuit.recordFailure(stubConfig());
+  embeddingCircuit.resetForTests();
+  assert.equal(embeddingCircuit.isOpen(stubConfig()), false);
 });
