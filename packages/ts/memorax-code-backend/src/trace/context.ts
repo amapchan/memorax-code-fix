@@ -16,7 +16,7 @@ export type TraceContextOrigin =
   | "trae-hook-body"
   | "current-turn-file"
   | "manual";
-export type TraceClient = "codex" | "claude" | "dsh" | "opencode" | "codebuddy" | "workbuddy" | "trae";
+export type TraceClient = "codex" | "claude" | "dsh" | "opencode" | "mimocode" | "codebuddy" | "workbuddy" | "trae";
 
 export type TraceRelatedTurn = Readonly<{
   turnId?: string;

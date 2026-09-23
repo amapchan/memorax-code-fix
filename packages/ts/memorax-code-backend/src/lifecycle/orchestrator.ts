@@ -44,6 +44,7 @@ import {
   type DshAdapterLifecycleParticipant,
 } from "../clients/dsh/lifecycle.js";
 import { openCodeAdapterLifecycle } from "../clients/opencode/lifecycle.js";
+import { mimoCodeAdapterLifecycle } from "../clients/mimocode/lifecycle.js";
 import { codeBuddyAdapterLifecycle, workBuddyAdapterLifecycle, resolveCodeBuddyClientSelection } from "../clients/codebuddy/lifecycle.js";
 import { traeAdapterLifecycle } from "../clients/trae/lifecycle.js";
 import type {
@@ -155,6 +156,9 @@ export async function collectMemoraxCodeStatus(
   const opencodeAdapter = clients.opencode
     ? await openCodeAdapterLifecycle.status({ argv, serviceOptions, backendUrl })
     : undefined;
+  const mimocodeAdapter = clients.mimocode
+    ? await mimoCodeAdapterLifecycle.status({ argv, serviceOptions, backendUrl })
+    : undefined;
   const codebuddyAdapter = clients.codebuddy
     ? await codeBuddyAdapterLifecycle.status({ argv, serviceOptions, backendUrl })
     : undefined;
@@ -164,7 +168,7 @@ export async function collectMemoraxCodeStatus(
   const traeAdapter = clients.trae
     ? await traeAdapterLifecycle.status({ argv, serviceOptions, backendUrl })
     : undefined;
-  const adapters = lifecycleAdapterReports({ codexAdapter, claudeAdapter, dshAdapter, opencodeAdapter, codebuddyAdapter, workbuddyAdapter, traeAdapter });
+  const adapters = lifecycleAdapterReports({ codexAdapter, claudeAdapter, dshAdapter, opencodeAdapter, mimocodeAdapter, codebuddyAdapter, workbuddyAdapter, traeAdapter });
   const optionalDshUnavailable = isOptionalUnavailableDshAdapter(dshAdapter);
   return {
     ok: backend.ok
@@ -178,6 +182,7 @@ export async function collectMemoraxCodeStatus(
     ...(claudeAdapter ? { claudeAdapter } : {}),
     ...(dshAdapter ? { dshAdapter } : {}),
     ...(opencodeAdapter ? { opencodeAdapter } : {}),
+    ...(mimocodeAdapter ? { mimocodeAdapter } : {}),
     ...(codebuddyAdapter ? { codebuddyAdapter } : {}),
     ...(workbuddyAdapter ? { workbuddyAdapter } : {}),
     ...(traeAdapter ? { traeAdapter } : {}),
@@ -343,6 +348,9 @@ async function executeMemoraxCodeStart(
   const deselectedOpenCode = previousClients?.opencode && !clients.opencode
     ? await openCodeAdapterLifecycle.disable({ argv, serviceOptions })
     : undefined;
+  const deselectedMiMoCode = previousClients?.mimocode && !clients.mimocode
+    ? await mimoCodeAdapterLifecycle.disable({ argv, serviceOptions })
+    : undefined;
   const deselectedCodeBuddy = previousClients?.codebuddy && !clients.codebuddy
     ? await codeBuddyAdapterLifecycle.disable({ argv, serviceOptions })
     : undefined;
@@ -356,6 +364,7 @@ async function executeMemoraxCodeStart(
     || deselectedClaude?.ok === false
     || deselectedDsh?.ok === false
     || deselectedOpenCode?.ok === false
+    || deselectedMiMoCode?.ok === false
     || deselectedCodeBuddy?.ok === false
     || deselectedWorkBuddy?.ok === false
     || deselectedTrae?.ok === false) {
@@ -370,6 +379,7 @@ async function executeMemoraxCodeStart(
         ? { dshAdapter: recovery.dshAdapter ?? deselectedDsh }
         : {}),
       ...(deselectedOpenCode ? { opencodeAdapter: deselectedOpenCode } : {}),
+      ...(deselectedMiMoCode ? { mimocodeAdapter: deselectedMiMoCode } : {}),
       ...(deselectedCodeBuddy ? { codebuddyAdapter: deselectedCodeBuddy } : {}),
       ...(deselectedWorkBuddy ? { workbuddyAdapter: deselectedWorkBuddy } : {}),
       ...(deselectedTrae ? { traeAdapter: deselectedTrae } : {}),
@@ -411,6 +421,9 @@ async function executeMemoraxCodeStart(
   const opencodeAdapter = clients.opencode
     ? await openCodeAdapterLifecycle.prepareEnable({ argv, serviceOptions, backendUrl })
     : undefined;
+  const mimocodeAdapter = clients.mimocode
+    ? await mimoCodeAdapterLifecycle.prepareEnable({ argv, serviceOptions, backendUrl })
+    : undefined;
   const codebuddyAdapter = clients.codebuddy
     ? await codeBuddyAdapterLifecycle.prepareEnable({ argv, serviceOptions, backendUrl })
     : undefined;
@@ -445,6 +458,8 @@ async function executeMemoraxCodeStart(
       ...(claudeAdapter ? { claudeAdapter } : {}),
       ...(recovery.dshAdapter ? { dshAdapter: recovery.dshAdapter } : {}),
       ...(opencodeAdapter ? { opencodeAdapter } : {}),
+
+      ...(mimocodeAdapter ? { mimocodeAdapter } : {}),
       codebuddyAdapter,
       ...(workbuddyAdapter ? { workbuddyAdapter } : {}),
       ...(traeAdapter ? { traeAdapter } : {}),
@@ -460,6 +475,7 @@ async function executeMemoraxCodeStart(
       ...(claudeAdapter ? { claudeAdapter } : {}),
       ...(recovery.dshAdapter ? { dshAdapter: recovery.dshAdapter } : {}),
       ...(opencodeAdapter ? { opencodeAdapter } : {}),
+    ...(mimocodeAdapter ? { mimocodeAdapter } : {}),
       workbuddyAdapter,
       ...(codebuddyAdapter ? { codebuddyAdapter } : {}),
       ...(traeAdapter ? { traeAdapter } : {}),
@@ -475,6 +491,7 @@ async function executeMemoraxCodeStart(
       ...(claudeAdapter ? { claudeAdapter } : {}),
       ...(recovery.dshAdapter ? { dshAdapter: recovery.dshAdapter } : {}),
       ...(opencodeAdapter ? { opencodeAdapter } : {}),
+    ...(mimocodeAdapter ? { mimocodeAdapter } : {}),
       ...(codebuddyAdapter ? { codebuddyAdapter } : {}),
       ...(workbuddyAdapter ? { workbuddyAdapter } : {}),
       traeAdapter,
@@ -498,6 +515,7 @@ async function executeMemoraxCodeStart(
       ...(claudeAdapter ? { claudeAdapter } : {}),
       dshAdapter: recovery.dshAdapter ?? preparedDshAdapter,
       ...(opencodeAdapter ? { opencodeAdapter } : {}),
+    ...(mimocodeAdapter ? { mimocodeAdapter } : {}),
       ...(codebuddyAdapter ? { codebuddyAdapter } : {}),
       ...(workbuddyAdapter ? { workbuddyAdapter } : {}),
       ...(traeAdapter ? { traeAdapter } : {}),
@@ -510,6 +528,9 @@ async function executeMemoraxCodeStart(
       : undefined;
     const disabledOpenCode = opencodeAdapter
       ? await openCodeAdapterLifecycle.disable({ argv, serviceOptions })
+      : undefined;
+    const disabledMiMoCode = mimocodeAdapter
+      ? await mimoCodeAdapterLifecycle.disable({ argv, serviceOptions })
       : undefined;
     const disabledCodeBuddy = codebuddyAdapter
       ? await codeBuddyAdapterLifecycle.disable({ argv, serviceOptions })
@@ -528,6 +549,7 @@ async function executeMemoraxCodeStart(
       ...(claudeAdapter ? { claudeAdapter } : {}),
       ...(preparedDshAdapter ? { dshAdapter: preparedDshAdapter } : {}),
       ...(disabledOpenCode ? { opencodeAdapter: disabledOpenCode } : {}),
+      ...(disabledMiMoCode ? { mimocodeAdapter: disabledMiMoCode } : {}),
       ...(disabledCodeBuddy ? { codebuddyAdapter: disabledCodeBuddy } : {}),
       ...(disabledWorkBuddy ? { workbuddyAdapter: disabledWorkBuddy } : {}),
       ...(disabledTrae ? { traeAdapter: disabledTrae } : {}),
@@ -549,6 +571,7 @@ async function executeMemoraxCodeStart(
     ...(claudeAdapter ? { claudeAdapter } : {}),
     ...(dshAdapter ? { dshAdapter } : {}),
     ...(opencodeAdapter ? { opencodeAdapter } : {}),
+    ...(mimocodeAdapter ? { mimocodeAdapter } : {}),
     ...(codebuddyAdapter ? { codebuddyAdapter } : {}),
     ...(workbuddyAdapter ? { workbuddyAdapter } : {}),
     ...(traeAdapter ? { traeAdapter } : {}),
@@ -610,6 +633,7 @@ async function executeMemoraxCodeStop(
       claude: activeClients.claude && !clients.claude,
       dsh: activeClients.dsh && !clients.dsh,
       opencode: activeClients.opencode && !clients.opencode,
+      mimocode: activeClients.mimocode && !clients.mimocode,
       codebuddy: activeClients.codebuddy && !clients.codebuddy,
       workbuddy: activeClients.workbuddy && !clients.workbuddy,
       trae: activeClients.trae && !clients.trae,
@@ -669,6 +693,9 @@ async function executeMemoraxCodeStop(
   const opencodeAdapter = clients.opencode
     ? await openCodeAdapterLifecycle.disable({ argv, serviceOptions })
     : undefined;
+  const mimocodeAdapter = clients.mimocode
+    ? await mimoCodeAdapterLifecycle.disable({ argv, serviceOptions })
+    : undefined;
   const codebuddyAdapter = clients.codebuddy
     ? await codeBuddyAdapterLifecycle.disable({ argv, serviceOptions })
     : undefined;
@@ -678,7 +705,7 @@ async function executeMemoraxCodeStop(
   const traeAdapter = clients.trae
     ? await traeAdapterLifecycle.disable({ argv, serviceOptions })
     : undefined;
-  const adaptersOk = lifecycleAdapterReports({ codexAdapter, claudeAdapter, dshAdapter, opencodeAdapter, codebuddyAdapter, workbuddyAdapter, traeAdapter })
+  const adaptersOk = lifecycleAdapterReports({ codexAdapter, claudeAdapter, dshAdapter, opencodeAdapter, mimocodeAdapter, codebuddyAdapter, workbuddyAdapter, traeAdapter })
     .every(({ report }) => report.ok !== false);
   const backend = stoppedBackend
     ?? (adaptersOk
@@ -694,6 +721,7 @@ async function executeMemoraxCodeStop(
       ...(claudeAdapter ? { claudeAdapter } : {}),
       ...(dshAdapter ? { dshAdapter } : {}),
       ...(opencodeAdapter ? { opencodeAdapter } : {}),
+    ...(mimocodeAdapter ? { mimocodeAdapter } : {}),
       ...(codebuddyAdapter ? { codebuddyAdapter } : {}),
       ...(workbuddyAdapter ? { workbuddyAdapter } : {}),
       ...(traeAdapter ? { traeAdapter } : {}),
@@ -825,6 +853,9 @@ async function executeMemoraxCodeUninstall(
   const opencodePlugin = clients.opencode
     ? await openCodeAdapterLifecycle.remove({ argv, serviceOptions })
     : undefined;
+  const mimocodePlugin = clients.mimocode
+    ? await mimoCodeAdapterLifecycle.remove({ argv, serviceOptions })
+    : undefined;
   const codebuddyPlugin = clients.codebuddy
     ? await codeBuddyAdapterLifecycle.remove({ argv, serviceOptions })
     : undefined;
@@ -838,6 +869,7 @@ async function executeMemoraxCodeUninstall(
     && claudePlugin?.ok !== false
     && dshPlugin?.ok !== false
     && opencodePlugin?.ok !== false
+    && mimocodePlugin?.ok !== false
     && codebuddyPlugin?.ok !== false
     && workbuddyPlugin?.ok !== false
     && traePlugin?.ok !== false;
@@ -863,6 +895,7 @@ async function executeMemoraxCodeUninstall(
     ...(claudeAdapter ? { claudeAdapter } : {}),
     ...(dshAdapter ? { dshAdapter } : {}),
     ...(opencodeAdapter ? { opencodeAdapter } : {}),
+    ...(mimocodePlugin ? { mimocodeAdapter: mimocodePlugin } : {}),
     ...(codebuddyPlugin ? { codebuddyPlugin } : {}),
     ...(workbuddyPlugin ? { workbuddyPlugin } : {}),
     ...(traePlugin ? { traePlugin } : {}),
@@ -1002,6 +1035,7 @@ async function memoraxCodeStopContext(
     activeClients: await activeClientsFor(memoraxCodeHome, argv),
     clients: isPackageReplacement()
       ? { codex: false, claude: false, dsh: true, opencode: false }
+      : isPackageReplacement() ? { ...{ codex: false, claude: false, dsh: true, opencode: false }, mimocode: false }
       : await managedClientsFor(argv, serviceOptions, { preferActive: true }),
   };
 }

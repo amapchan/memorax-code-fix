@@ -19,6 +19,7 @@ export function readActiveManagedClients(memoraxCodeHome: string): ManagedClient
       // that the Backend was serving DSH.
       dsh: value.dsh === true,
       opencode: value.opencode === true,
+      ...(value.mimocode === true ? { mimocode: true } : {}),
       ...(value.codebuddy === true ? { codebuddy: true } : {}),
       ...(typeof value.workbuddy === "boolean" ? { workbuddy: value.workbuddy } : {}),
       ...(value.trae === true ? { trae: true } : {}),

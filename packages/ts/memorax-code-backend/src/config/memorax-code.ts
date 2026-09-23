@@ -16,6 +16,7 @@ export type MemoraxCodeConfig = Readonly<{
     claude?: boolean;
     dsh?: boolean;
     opencode?: boolean;
+    mimocode?: boolean;
     codebuddy?: boolean;
     workbuddy?: boolean;
     trae?: boolean;
@@ -104,6 +105,13 @@ export type MemoraxCodeConfig = Readonly<{
       max_event_chars?: number;
       max_file_bytes?: number;
     }>;
+    mimocode?: Readonly<{
+      enabled?: boolean;
+      capture_content?: boolean;
+      retention_days?: number;
+      max_event_chars?: number;
+      max_file_bytes?: number;
+    }>;
     codebuddy?: Readonly<{
       enabled?: boolean;
       capture_content?: boolean;
@@ -149,6 +157,7 @@ export function renderDefaultMemoraxCodeConfig(): string {
     "claude = true",
     "dsh = true",
     "opencode = true",
+    "mimocode = true",
     "",
     "# MemoraX remote-memory connection. Credentials may also come from the environment.",
     "[memorax]",
@@ -317,6 +326,7 @@ function normalizeMemoraxCodeConfig(value: unknown): MemoraxCodeConfig {
       claude: booleanField(clients, "claude"),
       dsh: booleanField(clients, "dsh"),
       opencode: booleanField(clients, "opencode"),
+      mimocode: booleanField(clients, "mimocode"),
       codebuddy: booleanField(clients, "codebuddy"),
       workbuddy: booleanField(clients, "workbuddy"),
       trae: booleanField(clients, "trae"),

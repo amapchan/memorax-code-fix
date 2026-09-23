@@ -6,6 +6,7 @@ export const LIFECYCLE_CLIENTS = [
   { id: "claude", name: "Claude Code", reportKey: "claudeAdapter", skillKey: "claudeSkills", hookKey: undefined },
   { id: "dsh", name: "DSH", reportKey: "dshAdapter", skillKey: undefined, hookKey: undefined },
   { id: "opencode", name: "OpenCode", reportKey: "opencodeAdapter", skillKey: "opencodeSkills", hookKey: undefined },
+  { id: "mimocode", name: "MiMoCode", reportKey: "mimocodeAdapter", skillKey: "mimocodeSkills", hookKey: undefined },
   { id: "codebuddy", name: "CodeBuddy CLI", reportKey: "codebuddyAdapter", skillKey: "codebuddySkills", hookKey: "codebuddyHooks" },
   { id: "workbuddy", name: "WorkBuddy", reportKey: "workbuddyAdapter", skillKey: "codebuddySkills", hookKey: "codebuddyHooks" },
   { id: "trae", name: "Trae", reportKey: "traeAdapter", skillKey: "traeSkills", hookKey: "traeHooks" },

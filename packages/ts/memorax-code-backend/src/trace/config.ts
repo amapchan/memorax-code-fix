@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { loadMemoraxCodeConfig, type MemoraxCodeConfig } from "../config/memorax-code.js";
 import { isTraceClient, type TraceClient } from "./context.js";
 
-export const TRACE_CLIENTS: readonly TraceClient[] = ["codex", "claude", "dsh", "opencode"];
+export const TRACE_CLIENTS: readonly TraceClient[] = ["codex", "claude", "dsh", "opencode", "mimocode"];
 export const TRACE_RUNTIME_CLIENTS: readonly TraceClient[] = [...TRACE_CLIENTS, "codebuddy", "workbuddy", "trae"];
 
 export type ClientTraceConfig = Readonly<{
@@ -36,6 +36,8 @@ export type CodexTracePaths = ClientTracePaths;
 export type ClaudeTracePaths = ClientTracePaths;
 export type DshTracePaths = ClientTracePaths;
 export type OpenCodeTracePaths = ClientTracePaths;
+export type MiMoCodeTraceConfig = ClientTraceConfig;
+export type MiMoCodeTracePaths = ClientTracePaths;
 export type CodeBuddyTracePaths = ClientTracePaths;
 export type TraeTracePaths = ClientTracePaths;
 
@@ -70,6 +72,13 @@ export const OPENCODE_TRACE_DEFAULT_CONFIG: OpenCodeTraceConfig = {
   maxEventChars: 20_000,
   maxFileBytes: 52_428_800,
 };
+export const MIMOCODE_TRACE_DEFAULT_CONFIG: MiMoCodeTraceConfig = {
+  enabled: true,
+  captureContent: true,
+  retentionDays: 30,
+  maxEventChars: 10_000,
+  maxFileBytes: 5 * 1024 * 1024,
+};
 
 export const CODEBUDDY_TRACE_DEFAULT_CONFIG: CodeBuddyTraceConfig = {
   ...OPENCODE_TRACE_DEFAULT_CONFIG,
@@ -84,6 +93,7 @@ const TRACE_DEFAULT_CONFIGS: Readonly<Record<TraceClient, ClientTraceConfig>> = 
   claude: CLAUDE_TRACE_DEFAULT_CONFIG,
   dsh: DSH_TRACE_DEFAULT_CONFIG,
   opencode: OPENCODE_TRACE_DEFAULT_CONFIG,
+  mimocode: MIMOCODE_TRACE_DEFAULT_CONFIG,
   codebuddy: CODEBUDDY_TRACE_DEFAULT_CONFIG,
   workbuddy: CODEBUDDY_TRACE_DEFAULT_CONFIG,
   trae: TRAE_TRACE_DEFAULT_CONFIG,
@@ -94,6 +104,7 @@ const TRACE_ENV_PREFIXES: Readonly<Record<TraceClient, string>> = {
   claude: "MEMORAX_CODE_CLAUDE_TRACE",
   dsh: "MEMORAX_CODE_DSH_TRACE",
   opencode: "MEMORAX_CODE_OPENCODE_TRACE",
+  mimocode: "MEMORAX_CODE_MIMOCODE_TRACE",
   codebuddy: "MEMORAX_CODE_CODEBUDDY_TRACE",
   workbuddy: "MEMORAX_CODE_WORKBUDDY_TRACE",
   trae: "MEMORAX_CODE_TRAE_TRACE",

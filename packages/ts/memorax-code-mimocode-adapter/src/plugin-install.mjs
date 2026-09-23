@@ -1,0 +1,735 @@
+import { createHash, randomUUID } from "node:crypto";
+import {
+  cpSync,
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  readlinkSync,
+  renameSync,
+  rmSync,
+} from "node:fs";
+import { dirname, join, relative, resolve } from "node:path";
+import { pathToFileURL, fileURLToPath } from "node:url";
+import {
+  atomicWriteJson,
+  atomicWriteText,
+  readAdapterState,
+  stringOption,
+} from "../../memorax-code-adapter-common/src/config-utils.mjs";
+import { withWindowsDirectoryRetry } from "../../memorax-code-adapter-common/src/windows-directory-retry.mjs";
+import { attachDeploymentFailure, deploymentFailure } from "../../memorax-code-adapter-common/src/deployment-failure.mjs";
+import { DEFAULT_BACKEND_URL as BACKEND_DEFAULT } from "../../memorax-code-adapter-common/src/backend-connection.mjs";
+import {
+  adapterStatePath,
+  defaultMemoraxCodeHome,
+  defaultMiMoCodeConfigDir,
+  MiMoCodePluginPath,
+  MiMoCodeRepoMemoryHelperPath,
+  MiMoCodeSkillPath,
+} from "./adapter-paths.mjs";
+
+const STATE_VERSION = 1;
+const MANAGED_LOADER_HEADER = "// Managed by MemoraX Code. Do not edit.";
+const SKILL_PACKAGE_METADATA = ".memorax-code-package.json";
+const ADAPTER_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+
+export function ensureMiMoCodePluginInstalled(options = {}) {
+  const paths = resolvePaths(options);
+  const previousState = readAdapterState(paths.statePath);
+  const stateProblem = validateState(previousState, paths.statePath);
+  if (stateProblem) return { ...stateProblem, action: "mimocode-plugin-install" };
+  const sourceProblem = validateSources(paths);
+  if (sourceProblem) return { ...sourceProblem, action: "mimocode-plugin-install" };
+
+  const pluginExists = existsSync(paths.pluginPath);
+  const pluginIsManaged = previousState?.pluginPath === paths.pluginPath
+    && (!pluginExists || isManagedLoader(paths.pluginPath));
+  const skillIsManaged = previousState?.skillPath === paths.skillPath
+    || isMemoraxManagedSkill(paths.skillPath);
+  const repoMemoryHelperExists = existsSync(paths.repoMemoryHelperPath);
+  const repoMemoryHelperIsManaged = previousState?.repoMemoryHelperPath
+    === paths.repoMemoryHelperPath
+    && (!repoMemoryHelperExists || isManagedLoader(paths.repoMemoryHelperPath));
+  if (pluginExists && !pluginIsManaged) {
+    return conflict("plugin_conflict", paths, paths.pluginPath);
+  }
+  if (existsSync(paths.skillPath) && !skillIsManaged) {
+    return conflict("skill_conflict", paths, paths.skillPath);
+  }
+  if (repoMemoryHelperExists && !repoMemoryHelperIsManaged) {
+    return conflict("repo_memory_helper_conflict", paths, paths.repoMemoryHelperPath);
+  }
+
+  const backendUrl = normalizeBackendUrl(
+    options.backendUrl ?? previousState?.backendUrl ?? BACKEND_DEFAULT,
+  );
+  let pluginSourceSha256;
+  let repoMemoryHelperSourceSha256;
+  try {
+    pluginSourceSha256 = fileSha256(paths.pluginSourcePath);
+    repoMemoryHelperSourceSha256 = fileSha256(paths.repoMemoryHelperSourcePath);
+  } catch (error) { throw attachDeploymentFailure(error, "plugin-stage"); }
+  const loader = createManagedLoader(paths, pluginSourceSha256);
+  const repoMemoryHelperLoader = createManagedRepoMemoryHelperLoader(
+    paths,
+    repoMemoryHelperSourceSha256,
+  );
+  const pluginCurrent = pluginIsManaged && fileContentsEqual(paths.pluginPath, loader);
+  const skillCurrent = skillIsManaged && skillContentsCurrent(paths);
+  const repoMemoryHelperCurrent = repoMemoryHelperIsManaged
+    && fileContentsEqual(paths.repoMemoryHelperPath, repoMemoryHelperLoader);
+  const artifactsCurrent = pluginCurrent && skillCurrent && repoMemoryHelperCurrent;
+  const current = artifactsCurrent
+    && previousState?.enabled === true
+    && normalizeOptionalBackendUrl(previousState.backendUrl) === backendUrl;
+
+  const now = new Date().toISOString();
+  const state = {
+    version: STATE_VERSION,
+    runtime: "mimocode",
+    integration: "plugin",
+    enabled: true,
+    backendUrl,
+    MiMoCodeConfigDir: paths.MiMoCodeConfigDir,
+    pluginPath: paths.pluginPath,
+    pluginSourcePath: paths.pluginSourcePath,
+    pluginSourceSha256,
+    skillPath: paths.skillPath,
+    skillSourcePath: paths.skillSourcePath,
+    repoMemoryHelperPath: paths.repoMemoryHelperPath,
+    repoMemoryHelperSourcePath: paths.repoMemoryHelperSourcePath,
+    repoMemoryHelperSourceSha256,
+    ...(paths.cliBinDir ? { cliBinDir: paths.cliBinDir } : {}),
+    installedAt: stringOption(previousState?.installedAt) ?? now,
+    updatedAt: now,
+  };
+  const pluginExisted = existsSync(paths.pluginPath);
+  const skillExisted = existsSync(paths.skillPath);
+  const repoMemoryHelperExisted = existsSync(paths.repoMemoryHelperPath);
+  let stage = "skill-stage";
+  try {
+    if (!skillCurrent) {
+      materializeSkill(paths.skillSourcePath, paths.skillPath, paths.memoraxCodeCommand);
+    }
+    stage = "plugin-write";
+    if (!pluginCurrent) atomicWriteText(paths.pluginPath, loader);
+    if (!repoMemoryHelperCurrent) {
+      stage = "helper-write";
+      atomicWriteText(paths.repoMemoryHelperPath, repoMemoryHelperLoader);
+    }
+    stage = "state-write";
+    atomicWriteJson(paths.statePath, state);
+  } catch (error) {
+    const cleanupErrors = [
+      removeNewArtifact(paths.pluginPath, pluginExisted),
+      removeNewArtifact(paths.skillPath, skillExisted, true),
+      removeNewArtifact(paths.repoMemoryHelperPath, repoMemoryHelperExisted),
+    ];
+    throw attachDeploymentFailure(error, stage, { cleanupError: cleanupErrors.find(Boolean) });
+  }
+  try { removePreviousInstallation(previousState, paths); }
+  catch (error) { throw attachDeploymentFailure(error, "cleanup"); }
+
+  return {
+    ok: true,
+    action: "mimocode-plugin-install",
+    installed: true,
+    enabled: true,
+    managed: true,
+    integration: "plugin",
+    configuredBackendUrl: backendUrl,
+    expectedBackendUrl: backendUrl,
+    backendUrlMatches: true,
+    MiMoCodeSkills: skillSummary(paths.skillPath, true),
+    changed: !current,
+    restartRequired: !pluginCurrent || !skillCurrent || previousState?.enabled !== true,
+    statePath: paths.statePath,
+    pluginPath: paths.pluginPath,
+    skillPath: paths.skillPath,
+    repoMemoryHelperPath: paths.repoMemoryHelperPath,
+    state,
+  };
+}
+
+export function readMiMoCodePluginStatus(options = {}) {
+  const paths = resolvePaths(options);
+  const state = readAdapterState(paths.statePath);
+  const stateProblem = validateState(state, paths.statePath);
+  if (stateProblem) return { ...stateProblem, action: "mimocode-plugin-status", installed: false, enabled: false };
+  if (!state) {
+    return {
+      ok: true,
+      action: "mimocode-plugin-status",
+      installed: false,
+      enabled: false,
+      managed: false,
+      integration: "plugin",
+      configuredBackendUrl: undefined,
+      expectedBackendUrl: normalizeOptionalBackendUrl(options.backendUrl),
+      backendUrlMatches: true,
+      MiMoCodeSkills: skillSummary(paths.skillPath, false),
+      statePath: paths.statePath,
+      pluginPath: paths.pluginPath,
+      skillPath: paths.skillPath,
+      repoMemoryHelperPath: paths.repoMemoryHelperPath,
+      skipped: true,
+      reason: "not_managed",
+    };
+  }
+
+  const configuredPaths = resolvePaths({
+    ...options,
+    MiMoCodeConfigDir: state.MiMoCodeConfigDir,
+    pluginSourcePath: options.pluginSourcePath ?? state.pluginSourcePath,
+    skillSourcePath: options.skillSourcePath ?? state.skillSourcePath,
+    repoMemoryHelperSourcePath: options.repoMemoryHelperSourcePath
+      ?? state.repoMemoryHelperSourcePath,
+    cliBinDir: options.cliBinDir ?? state.cliBinDir,
+  });
+  if (state.pluginPath !== configuredPaths.pluginPath
+    || state.skillPath !== configuredPaths.skillPath
+    || (state.repoMemoryHelperPath
+      && state.repoMemoryHelperPath !== configuredPaths.repoMemoryHelperPath)) {
+    return {
+      ok: false,
+      action: "mimocode-plugin-status",
+      installed: false,
+      enabled: false,
+      managed: true,
+      reason: "state_paths_invalid",
+      statePath: paths.statePath,
+    };
+  }
+
+  const pluginExists = existsSync(configuredPaths.pluginPath);
+  const skillExists = existsSync(join(configuredPaths.skillPath, "SKILL.md"));
+  const repoMemoryHelperExists = existsSync(configuredPaths.repoMemoryHelperPath);
+  const repoMemoryHelperRecorded = state.repoMemoryHelperPath
+    === configuredPaths.repoMemoryHelperPath;
+  const sourcesReady = !validateSources(configuredPaths);
+  const pluginSourceSha256 = sourcesReady ? fileSha256(configuredPaths.pluginSourcePath) : undefined;
+  const repoMemoryHelperSourceSha256 = sourcesReady
+    ? fileSha256(configuredPaths.repoMemoryHelperSourcePath)
+    : undefined;
+  const pluginCurrent = sourcesReady && fileContentsEqual(
+    configuredPaths.pluginPath,
+    createManagedLoader(configuredPaths, pluginSourceSha256),
+  );
+  const skillCurrent = sourcesReady && skillContentsCurrent(configuredPaths);
+  const repoMemoryHelperCurrent = repoMemoryHelperRecorded
+    && sourcesReady
+    && fileContentsEqual(
+      configuredPaths.repoMemoryHelperPath,
+      createManagedRepoMemoryHelperLoader(configuredPaths, repoMemoryHelperSourceSha256),
+    );
+  const installed = pluginExists && skillExists && repoMemoryHelperExists;
+  const enabled = state.enabled === true
+    && installed
+    && pluginCurrent
+    && skillCurrent
+    && repoMemoryHelperCurrent;
+  const configuredBackendUrl = normalizeOptionalBackendUrl(state.backendUrl);
+  const expectedBackendUrl = normalizeOptionalBackendUrl(options.backendUrl);
+  const backendUrlMatches = !expectedBackendUrl || configuredBackendUrl === expectedBackendUrl;
+  return {
+    ok: true,
+    action: "mimocode-plugin-status",
+    installed,
+    enabled,
+    managed: true,
+    integration: "plugin",
+    current: pluginCurrent && skillCurrent && repoMemoryHelperCurrent,
+    pluginExists,
+    pluginCurrent,
+    skillExists,
+    skillCurrent,
+    repoMemoryHelperExists,
+    repoMemoryHelperCurrent,
+    configuredBackendUrl,
+    expectedBackendUrl,
+    backendUrlMatches,
+    MiMoCodeSkills: skillSummary(configuredPaths.skillPath, skillCurrent),
+    statePath: paths.statePath,
+    pluginPath: configuredPaths.pluginPath,
+    skillPath: configuredPaths.skillPath,
+    repoMemoryHelperPath: configuredPaths.repoMemoryHelperPath,
+    state,
+    ...(!backendUrlMatches
+      ? { reason: "backend_url_mismatch" }
+      : !enabled
+        ? { reason: statusReason({
+          sourcesReady,
+          pluginExists,
+          pluginCurrent,
+          skillExists,
+          skillCurrent,
+          repoMemoryHelperExists,
+          repoMemoryHelperRecorded,
+          repoMemoryHelperCurrent,
+        }) }
+        : {}),
+  };
+}
+
+export function disableMiMoCodePlugin(options = {}) {
+  const paths = resolvePaths(options);
+  const state = readAdapterState(paths.statePath);
+  const stateProblem = validateState(state, paths.statePath);
+  if (stateProblem) return { ...stateProblem, action: "mimocode-plugin-disable" };
+  if (!state) {
+    return {
+      ok: true,
+      action: "mimocode-plugin-disable",
+      installed: false,
+      enabled: false,
+      managed: false,
+      integration: "plugin",
+      skipped: true,
+      reason: "not_managed",
+      statePath: paths.statePath,
+    };
+  }
+
+  const nextState = {
+    ...state,
+    enabled: false,
+    disabledAt: new Date().toISOString(),
+  };
+  try { atomicWriteJson(paths.statePath, nextState); }
+  catch (error) { throw attachDeploymentFailure(error, "state-write"); }
+  const repoMemoryHelperPath = stringOption(state.repoMemoryHelperPath);
+  return {
+    ok: true,
+    action: "mimocode-plugin-disable",
+    installed: existsSync(state.pluginPath)
+      && existsSync(join(state.skillPath, "SKILL.md"))
+      && Boolean(repoMemoryHelperPath && existsSync(repoMemoryHelperPath)),
+    enabled: false,
+    managed: true,
+    integration: "plugin",
+    changed: state.enabled === true,
+    statePath: paths.statePath,
+    state: nextState,
+  };
+}
+
+export function removeMiMoCodePluginInstallation(options = {}) {
+  const paths = resolvePaths(options);
+  const state = readAdapterState(paths.statePath);
+  const stateProblem = validateState(state, paths.statePath);
+  if (stateProblem) return { ...stateProblem, action: "mimocode-plugin-remove" };
+  if (!state) {
+    return {
+      ok: true,
+      action: "mimocode-plugin-remove",
+      skipped: true,
+      reason: "not_managed",
+      statePath: paths.statePath,
+    };
+  }
+
+  const MiMoCodeConfigDir = resolve(state.MiMoCodeConfigDir);
+  const pluginPath = MiMoCodePluginPath(MiMoCodeConfigDir);
+  const skillPath = MiMoCodeSkillPath(MiMoCodeConfigDir);
+  const repoMemoryHelperPath = MiMoCodeRepoMemoryHelperPath(MiMoCodeConfigDir);
+  const recordedRepoMemoryHelperPath = stringOption(state.repoMemoryHelperPath);
+  if (state.pluginPath !== pluginPath
+    || state.skillPath !== skillPath
+    || (recordedRepoMemoryHelperPath
+      && recordedRepoMemoryHelperPath !== repoMemoryHelperPath)) {
+    return {
+      ok: false,
+      action: "mimocode-plugin-remove",
+      reason: "state_paths_invalid",
+      statePath: paths.statePath,
+    };
+  }
+  if (existsSync(pluginPath) && !isManagedLoader(pluginPath)) {
+    return {
+      ok: false,
+      action: "mimocode-plugin-remove",
+      reason: "plugin_not_managed",
+      statePath: paths.statePath,
+      pluginPath,
+    };
+  }
+  if (recordedRepoMemoryHelperPath
+    && existsSync(repoMemoryHelperPath)
+    && !isManagedLoader(repoMemoryHelperPath)) {
+    return {
+      ok: false,
+      action: "mimocode-plugin-remove",
+      reason: "repo_memory_helper_not_managed",
+      statePath: paths.statePath,
+      repoMemoryHelperPath,
+    };
+  }
+
+  let stage = "plugin-remove";
+  try {
+    rmSync(pluginPath, { force: true });
+    stage = "skill-remove";
+    rmSync(skillPath, { recursive: true, force: true });
+    stage = "plugin-remove";
+    if (recordedRepoMemoryHelperPath) rmSync(repoMemoryHelperPath, { force: true });
+    stage = "state-write";
+    rmSync(paths.statePath, { force: true });
+  } catch (error) { throw attachDeploymentFailure(error, stage); }
+  return {
+    ok: true,
+    action: "mimocode-plugin-remove",
+    installed: false,
+    enabled: false,
+    managed: false,
+    integration: "plugin",
+    statePath: paths.statePath,
+    pluginPath,
+    skillPath,
+    repoMemoryHelperPath,
+  };
+}
+
+export function defaultMiMoCodePluginSourcePath() {
+  return join(ADAPTER_ROOT, "src", "plugin.mjs");
+}
+
+export function defaultMiMoCodeSkillSourcePath() {
+  const packagedSkill = join(ADAPTER_ROOT, "skills", "memorax-code");
+  return existsSync(join(packagedSkill, "SKILL.md"))
+    ? packagedSkill
+    : resolve(ADAPTER_ROOT, "..", "memorax-code-codex-adapter", "skills", "memorax-code");
+}
+
+export function defaultMiMoCodeRepoMemoryHelperSourcePath() {
+  return join(ADAPTER_ROOT, "hooks", "repo-memory-job.mjs");
+}
+
+export function defaultMiMoCodeCliBinDir(adapterRoot = ADAPTER_ROOT) {
+  const packageRoot = resolve(adapterRoot, "..", "..");
+  const candidates = [
+    resolve(packageRoot, "..", "..", ".bin"),
+    resolve(packageRoot, "..", "..", ".."),
+    resolve(packageRoot, "..", "..", "..", "..", "bin"),
+    join(packageRoot, "bin"),
+  ];
+  return candidates.find(hasMemoraxCliCommand);
+}
+
+export function defaultMemoraxCodeCommand(adapterRoot = ADAPTER_ROOT) {
+  const packageRoot = resolve(adapterRoot, "..", "..");
+  return [
+    join(packageRoot, "bin", "memorax-code.mjs"),
+    join(packageRoot, "npm", "memorax-code", "bin", "memorax-code.mjs"),
+  ].find((path) => existsSync(path));
+}
+
+function resolvePaths(options) {
+  const memoraxCodeHome = resolve(options.memoraxCodeHome ?? defaultMemoraxCodeHome());
+  const MiMoCodeConfigDir = resolve(options.MiMoCodeConfigDir ?? defaultMiMoCodeConfigDir());
+  return {
+    memoraxCodeHome,
+    MiMoCodeConfigDir,
+    statePath: resolve(options.statePath ?? adapterStatePath(memoraxCodeHome)),
+    pluginPath: MiMoCodePluginPath(MiMoCodeConfigDir),
+    skillPath: MiMoCodeSkillPath(MiMoCodeConfigDir),
+    repoMemoryHelperPath: MiMoCodeRepoMemoryHelperPath(MiMoCodeConfigDir),
+    pluginSourcePath: resolve(options.pluginSourcePath ?? defaultMiMoCodePluginSourcePath()),
+    skillSourcePath: resolve(options.skillSourcePath ?? defaultMiMoCodeSkillSourcePath()),
+    repoMemoryHelperSourcePath: resolve(
+      options.repoMemoryHelperSourcePath ?? defaultMiMoCodeRepoMemoryHelperSourcePath(),
+    ),
+    cliBinDir: stringOption(options.cliBinDir)
+      ? resolve(options.cliBinDir)
+      : defaultMiMoCodeCliBinDir(),
+    nodePath: stringOption(options.nodePath)
+      ? resolve(options.nodePath)
+      : process.execPath,
+    memoraxCodeCommand: stringOption(options.memoraxCodeCommand)
+      ? resolve(options.memoraxCodeCommand)
+      : defaultMemoraxCodeCommand(),
+  };
+}
+
+function validateState(state, statePath) {
+  if (state?.unreadable) {
+    return { ok: false, reason: "state_unreadable", statePath, failure: deploymentFailure(undefined, "state-read", { failureReason: "invalid_record" }) };
+  }
+  if (state && state.version !== STATE_VERSION) {
+    return {
+      ok: false,
+      reason: "state_version_unsupported",
+      statePath,
+      expectedVersion: STATE_VERSION,
+      actualVersion: state.version,
+      failure: deploymentFailure(undefined, "state-read", { failureReason: "unsupported_version" }),
+    };
+  }
+  if (state) {
+    const MiMoCodeConfigDir = stringOption(state.MiMoCodeConfigDir);
+    const pluginPath = stringOption(state.pluginPath);
+    const skillPath = stringOption(state.skillPath);
+    const repoMemoryHelperPath = stringOption(state.repoMemoryHelperPath);
+    const repoMemoryHelperSourcePath = stringOption(state.repoMemoryHelperSourcePath);
+    const repoMemoryHelperSourceSha256 = stringOption(state.repoMemoryHelperSourceSha256);
+    const hasRepoMemoryHelperState = [
+      "repoMemoryHelperPath",
+      "repoMemoryHelperSourcePath",
+      "repoMemoryHelperSourceSha256",
+    ].some((field) => Object.hasOwn(state, field));
+    if (state.runtime !== "mimocode"
+      || state.integration !== "plugin"
+      || !MiMoCodeConfigDir
+      || !pluginPath
+      || !skillPath
+      || (hasRepoMemoryHelperState && (
+        !repoMemoryHelperPath
+        || !repoMemoryHelperSourcePath
+        || !/^[a-f0-9]{64}$/.test(repoMemoryHelperSourceSha256 ?? "")
+      ))) {
+      return { ok: false, reason: "state_invalid", statePath, failure: deploymentFailure(undefined, "state-read", { failureReason: "invalid_record" }) };
+    }
+    const resolvedConfigDir = resolve(MiMoCodeConfigDir);
+    if (MiMoCodeConfigDir !== resolvedConfigDir
+      || pluginPath !== MiMoCodePluginPath(resolvedConfigDir)
+      || skillPath !== MiMoCodeSkillPath(resolvedConfigDir)
+      || (repoMemoryHelperPath
+        && repoMemoryHelperPath !== MiMoCodeRepoMemoryHelperPath(resolvedConfigDir))) {
+      return { ok: false, reason: "state_paths_invalid", statePath, failure: deploymentFailure(undefined, "state-read", { failureReason: "invalid_record" }) };
+    }
+  }
+  return undefined;
+}
+
+function validateSources(paths) {
+  if (!existsSync(paths.pluginSourcePath)) {
+    return { ok: false, reason: "plugin_source_missing", sourcePath: paths.pluginSourcePath, failure: deploymentFailure(undefined, "plugin-stage", { failureReason: "missing_source" }) };
+  }
+  if (!existsSync(join(paths.skillSourcePath, "SKILL.md"))) {
+    return { ok: false, reason: "skill_source_missing", sourcePath: paths.skillSourcePath, failure: deploymentFailure(undefined, "skill-stage", { failureReason: "missing_source" }) };
+  }
+  if (!existsSync(paths.repoMemoryHelperSourcePath)) {
+    return {
+      ok: false,
+      reason: "repo_memory_helper_source_missing",
+      sourcePath: paths.repoMemoryHelperSourcePath,
+      failure: deploymentFailure(undefined, "helper-write", { failureReason: "missing_source" }),
+    };
+  }
+  return undefined;
+}
+
+function conflict(reason, paths, conflictPath) {
+  return {
+    ok: false,
+    action: "mimocode-plugin-install",
+    reason,
+    conflictPath,
+    failure: deploymentFailure(undefined, "plugin-stage", { failureReason: "conflict" }),
+    statePath: paths.statePath,
+    pluginPath: paths.pluginPath,
+    skillPath: paths.skillPath,
+    repoMemoryHelperPath: paths.repoMemoryHelperPath,
+  };
+}
+
+function createManagedLoader(paths, pluginSourceSha256) {
+  const pluginUrl = pathToFileURL(paths.pluginSourcePath).href;
+  const pluginOptions = {
+    memoraxCodeHome: paths.memoraxCodeHome,
+    statePath: paths.statePath,
+    MiMoCodeConfigDir: paths.MiMoCodeConfigDir,
+    ...(paths.memoraxCodeCommand ? { memoraxCodeCommand: paths.memoraxCodeCommand } : {}),
+    nodePath: paths.nodePath,
+    ...(paths.cliBinDir ? { cliBinDir: paths.cliBinDir } : {}),
+  };
+  return [
+    MANAGED_LOADER_HEADER,
+    `// Plugin source SHA-256: ${pluginSourceSha256}`,
+    `import { createMemoraxMiMoCodePlugin } from ${JSON.stringify(pluginUrl)};`,
+    "",
+    `export const MemoraxMiMoCodePlugin = createMemoraxMiMoCodePlugin(${JSON.stringify(pluginOptions)});`,
+    "",
+  ].join("\n");
+}
+
+function createManagedRepoMemoryHelperLoader(paths, sourceSha256) {
+  const helperUrl = pathToFileURL(paths.repoMemoryHelperSourcePath).href;
+  return [
+    MANAGED_LOADER_HEADER,
+    `// Repo Memory helper source SHA-256: ${sourceSha256}`,
+    `import ${JSON.stringify(helperUrl)};`,
+    "",
+  ].join("\n");
+}
+
+function materializeSkill(sourcePath, targetPath, memoraxCodeCommand) {
+  const stagePath = `${targetPath}.tmp-${process.pid}-${randomUUID()}`;
+  let stage = "skill-stage";
+  try {
+    mkdirSync(dirname(targetPath), { recursive: true });
+    cpSync(sourcePath, stagePath, { recursive: true });
+    atomicWriteJson(
+      join(stagePath, SKILL_PACKAGE_METADATA),
+      skillPackageMetadata(memoraxCodeCommand),
+    );
+    stage = "skill-remove";
+    withWindowsDirectoryRetry(() => rmSync(targetPath, { recursive: true, force: true }));
+    stage = "skill-publish";
+    withWindowsDirectoryRetry(() => renameSync(stagePath, targetPath));
+  } catch (error) {
+    let cleanupError;
+    try {
+      withWindowsDirectoryRetry(() => rmSync(stagePath, { recursive: true, force: true }));
+    } catch (failure) {
+      cleanupError = failure;
+      // Preserve the installation failure if Windows also blocks stage cleanup.
+    }
+    error.stage = stage;
+    throw attachDeploymentFailure(error, stage, { cleanupError });
+  }
+}
+
+function removePreviousInstallation(previousState, paths) {
+  if (!previousState) return;
+  if (previousState.pluginPath !== paths.pluginPath && isManagedLoader(previousState.pluginPath)) {
+    rmSync(previousState.pluginPath, { force: true });
+  }
+  if (previousState.skillPath !== paths.skillPath) {
+    rmSync(previousState.skillPath, { recursive: true, force: true });
+  }
+  if (previousState.repoMemoryHelperPath !== paths.repoMemoryHelperPath
+    && isManagedLoader(previousState.repoMemoryHelperPath)) {
+    rmSync(previousState.repoMemoryHelperPath, { force: true });
+  }
+}
+
+function removeNewArtifact(path, existed, recursive = false) {
+  if (existed) return;
+  try {
+    rmSync(path, { recursive, force: true });
+  } catch (error) {
+    // Preserve the original installation failure.
+    return error;
+  }
+}
+
+function isManagedLoader(path) {
+  if (!path || !existsSync(path)) return false;
+  try {
+    return readFileSync(path, "utf8").startsWith(`${MANAGED_LOADER_HEADER}\n`);
+  } catch {
+    return false;
+  }
+}
+
+function fileContentsEqual(path, expected) {
+  try {
+    return readFileSync(path, "utf8") === expected;
+  } catch {
+    return false;
+  }
+}
+
+function fileSha256(path) {
+  return createHash("sha256").update(readFileSync(path)).digest("hex");
+}
+
+function skillContentsCurrent(paths) {
+  return directoriesEqual(paths.skillSourcePath, paths.skillPath)
+    && fileContentsEqual(
+      join(paths.skillPath, SKILL_PACKAGE_METADATA),
+      `${JSON.stringify(skillPackageMetadata(paths.memoraxCodeCommand), null, 2)}\n`,
+    );
+}
+
+function skillPackageMetadata(memoraxCodeCommand) {
+  return {
+    version: 1,
+    ...(memoraxCodeCommand ? { memoraxCodeCommand } : {}),
+  };
+}
+
+function isMemoraxManagedSkill(skillPath) {
+  return existsSync(join(skillPath, SKILL_PACKAGE_METADATA));
+}
+
+function hasMemoraxCliCommand(directory) {
+  return ["memorax-cli", "memorax-cli.cmd", "memorax-cli.exe"]
+    .some((name) => existsSync(join(directory, name)));
+}
+
+function directoriesEqual(sourceRoot, targetRoot) {
+  if (!existsSync(sourceRoot) || !existsSync(targetRoot)) return false;
+  const sourceEntries = collectDirectoryEntries(sourceRoot);
+  const targetEntries = collectDirectoryEntries(targetRoot);
+  if (sourceEntries.length !== targetEntries.length) return false;
+  return sourceEntries.every((source, index) => {
+    const target = targetEntries[index];
+    return source.path === target.path
+      && source.kind === target.kind
+      && source.content === target.content;
+  });
+}
+
+function collectDirectoryEntries(root) {
+  const entries = [];
+  visit(root);
+  return entries.sort((left, right) => left.path.localeCompare(right.path));
+
+  function visit(path) {
+    for (const name of readdirSync(path)) {
+      const absolutePath = join(path, name);
+      const entryPath = relative(root, absolutePath);
+      if (entryPath === SKILL_PACKAGE_METADATA) continue;
+      const stat = lstatSync(absolutePath);
+      if (stat.isDirectory()) {
+        entries.push({ path: entryPath, kind: "directory", content: "" });
+        visit(absolutePath);
+      } else if (stat.isSymbolicLink()) {
+        entries.push({ path: entryPath, kind: "symlink", content: readlinkSync(absolutePath) });
+      } else {
+        entries.push({ path: entryPath, kind: "file", content: readFileSync(absolutePath).toString("base64") });
+      }
+    }
+  }
+}
+
+function statusReason({
+  sourcesReady,
+  pluginExists,
+  pluginCurrent,
+  skillExists,
+  skillCurrent,
+  repoMemoryHelperExists,
+  repoMemoryHelperRecorded,
+  repoMemoryHelperCurrent,
+}) {
+  if (!sourcesReady) return "source_missing";
+  if (!pluginExists) return "plugin_missing";
+  if (!pluginCurrent) return "plugin_stale";
+  if (!skillExists) return "skill_missing";
+  if (!skillCurrent) return "skill_stale";
+  if (!repoMemoryHelperExists) return "repo_memory_helper_missing";
+  if (!repoMemoryHelperRecorded) return "repo_memory_helper_unmanaged";
+  if (!repoMemoryHelperCurrent) return "repo_memory_helper_stale";
+  return "not_enabled";
+}
+
+function normalizeBackendUrl(value) {
+  return String(value).replace(/\/+$/, "");
+}
+
+function normalizeOptionalBackendUrl(value) {
+  return stringOption(value) ? normalizeBackendUrl(value) : undefined;
+}
+
+function skillSummary(skillPath, ok) {
+  return {
+    ok,
+    status: ok ? "installed" : "missing",
+    sourceKind: "canonical",
+    path: skillPath,
+  };
+}

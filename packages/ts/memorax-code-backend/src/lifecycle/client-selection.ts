@@ -24,6 +24,7 @@ export function resolveManagedClients(argv: readonly string[], config: MemoraxCo
       // automatic local-Harness discovery enabled for existing installations.
       dsh: config.clients.dsh !== false,
       opencode: config.clients.opencode === true,
+      ...(config.clients.mimocode === true ? { mimocode: true } : {}),
       ...(config.clients.codebuddy === true ? { codebuddy: true } : {}),
       ...(config.clients.workbuddy !== undefined ? { workbuddy: config.clients.workbuddy } : {}),
       ...(config.clients.trae === true ? { trae: true } : {}),

@@ -57,7 +57,7 @@ const RED = "\x1b[31m";
 const BOLD = "\x1b[1m";
 const RESET = "\x1b[0m";
 const DSH_OPTIONAL_ENV = "MEMORAX_CODE_DSH_ADAPTER_OPTIONAL";
-const SETUP_CLIENTS = ["codex", "claude", "opencode", "codebuddy", "workbuddy", "trae"];
+const SETUP_CLIENTS = ["codex", "claude", "opencode", "mimocode", "codebuddy", "workbuddy", "trae"];
 
 const skipCodexPluginInstall = truthyEnv(process.env.MEMORAX_CODE_SKIP_CODEX_PLUGIN_INSTALL);
 const skipClaudeAdapterInstall = truthyEnv(process.env.MEMORAX_CODE_SKIP_CLAUDE_ADAPTER_INSTALL);
@@ -197,6 +197,7 @@ const detectedClients = requestedClients.filter((client) => {
   if (client === "codex") return !skipCodexPluginInstall && codexPreflight.ok;
   if (client === "claude") return !skipClaudeAdapterInstall && claudePreflight.ok;
   if (client === "opencode") return !skipOpenCodeAdapterInstall && opencodePreflight.ok;
+  if (client === "mimocode") return commandOnPath("mimocode", "mimocode", process.platform, process.env);
   if (client === "codebuddy") return !skipCodeBuddyAdapterInstall && codebuddyPreflight.ok;
   if (client === "workbuddy") return !skipWorkBuddyAdapterInstall && workbuddyPreflight.ok;
   return !skipTraeAdapterInstall && traePreflight.ok;
@@ -943,7 +944,7 @@ function writeClientSelectionConfig(clients, configuredClients = SETUP_CLIENTS) 
 
 function setManagedClientSelection(text, clients, configuredClients = SETUP_CLIENTS) {
   let updated = text;
-  for (const client of ["opencode", "claude", "codebuddy", "workbuddy", "trae", "codex"]) {
+  for (const client of ["mimocode", "opencode", "claude", "codebuddy", "workbuddy", "trae", "codex"]) {
     if (!configuredClients.includes(client)) continue;
     updated = setTomlField(updated, "clients", client, String(clients.includes(client)));
   }
@@ -1001,6 +1002,7 @@ function defaultMemoraxCodeConfig() {
     "claude = true # Manage the Claude adapter.",
     "dsh = true # Manage the DeepSeek Harness adapter when Profiles exist.",
     "opencode = true # Manage the OpenCode adapter.",
+    "mimocode = true # Manage the MiMoCode adapter.",
     "codebuddy = true # Manage the CodeBuddy CLI adapter.",
     "workbuddy = true # Manage the WorkBuddy adapter.",
     "trae = true # Manage the Trae adapter.",

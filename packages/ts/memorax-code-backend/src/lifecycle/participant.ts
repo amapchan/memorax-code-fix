@@ -51,6 +51,7 @@ export type AdapterReport = {
   codexSkills?: { ok?: boolean; status?: string };
   claudeSkills?: { ok?: boolean; status?: string };
   opencodeSkills?: { ok?: boolean; status?: string };
+  mimocodeSkills?: { ok?: boolean; status?: string };
   codebuddySkills?: { ok?: boolean; status?: string };
   traeSkills?: { ok?: boolean; status?: string };
   codebuddyHooks?: {
