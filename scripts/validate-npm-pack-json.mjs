@@ -85,8 +85,8 @@ try {
   const packedManifest = JSON.parse(
     await readFile(join(extracted, "package", "package.json"), "utf8"),
   );
-  if (packedManifest.engines?.node !== ">=20") {
-    throw new Error("npm pack must require Node.js 20 or newer");
+  if (packedManifest.engines?.node !== ">=22.13") {
+    throw new Error("npm pack must require Node.js 22.13 or newer (node:sqlite)");
   }
   const packedDshSkill = await readFile(
     join(extracted, "package", "lib/memorax-code-dsh-adapter/skills/memorax-code/SKILL.md"),

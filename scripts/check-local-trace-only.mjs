@@ -36,6 +36,11 @@ const reviewedNetworkSources = new Set([
   "packages/ts/memorax-code-backend/src/repo-memory/detect-updates.ts",
   "packages/ts/memorax-code-backend/src/provider/memorax/adapter.ts",
   "packages/ts/memorax-code-backend/src/provider/memorax/http.ts",
+  // Local memory provider: embedding.ts owns the only outbound call (an
+  // OpenAI-compatible /embeddings endpoint that computes vectors and never
+  // stores content); adapter.ts only threads the injected fetch client.
+  "packages/ts/memorax-code-backend/src/provider/local/embedding.ts",
+  "packages/ts/memorax-code-backend/src/provider/local/adapter.ts",
   "packages/ts/memorax-code-backend/src/transport/http/health.ts",
   "packages/ts/memorax-code-backend/src/transport/http/json.ts",
   "packages/ts/memorax-code-backend/src/transport/http/memory-hook.ts",

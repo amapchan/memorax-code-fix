@@ -150,8 +150,8 @@ async function validateSourceManifest() {
   if (typeof manifest.version !== "string" || !manifest.version) {
     throw new Error("main npm package version is required");
   }
-  if (manifest.engines?.node !== ">=20") {
-    throw new Error("main npm package must require Node.js 20 or newer");
+  if (manifest.engines?.node !== ">=22.13") {
+    throw new Error("main npm package must require Node.js 22.13 or newer (node:sqlite)");
   }
 }
 
@@ -215,8 +215,9 @@ async function copyGeneratedTree(source, destination) {
   const sourceRoot = join(repoRoot, source);
   // Reject orphaned output from removed sources and missing output from new sources.
   const trackedBackendPrefix = "packages/ts/memorax-code-backend/src/";
+  // Ambient .d.ts declarations have no emitted JavaScript output.
   const trackedBackendSources = [...declaredSourceFiles]
-    .filter((path) => path.startsWith(trackedBackendPrefix) && path.endsWith(".ts"))
+    .filter((path) => path.startsWith(trackedBackendPrefix) && path.endsWith(".ts") && !path.endsWith(".d.ts"))
     .sort();
   const emittedJavaScript = new Set();
   await walk(sourceRoot, async (path, entry) => {

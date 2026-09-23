@@ -1,4 +1,4 @@
-.PHONY: test test-ts test-adapter-common test-shared-skill test-codex-adapter test-claude-adapter test-dsh-adapter test-dsh-e2e test-opencode-adapter test-opencode-e2e test-codebuddy-adapter test-trae-adapter test-npm-package docs-check npm-package-build npm-package-check npm-publish-dry-run release-version-check clean
+.PHONY: test test-ts test-adapter-common test-shared-skill test-codex-adapter test-claude-adapter test-dsh-adapter test-dsh-e2e test-opencode-adapter test-opencode-e2e test-codebuddy-adapter test-trae-adapter test-npm-package docs-check npm-package-build npm-package-check local-release npm-publish-dry-run release-version-check clean
 
 NPM ?= npm
 
@@ -63,6 +63,9 @@ npm-package-build: release-version-check
 
 npm-package-check: release-version-check
 	scripts/npm-package-check.sh
+
+local-release:
+	node scripts/build-local-release.mjs
 
 release-version-check:
 	node scripts/sync-release-version.mjs --check
