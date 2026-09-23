@@ -487,7 +487,25 @@ export async function stopBackendService(
       ...backendServiceFailureFields(error, "BACKEND_SERVICE_STATE_READ_FAILED", "read_state"),
     };
   }
-  if (!state) return { ok: true, action: "stop", alreadyRunning: false };
+  if (!state) {
+    const orphanUrl = await resolveOrphanBackendUrl(options);
+    const orphan = orphanUrl
+      ? await probeOrphanBackendUrl(orphanUrl, options.timeoutMs ?? 2000, runtime)
+      : undefined;
+    if (orphan) {
+      const stopped = await stopOrphanBackend(orphan, options.timeoutMs ?? 5000, runtime);
+      if (!stopped) {
+        return {
+          ok: false,
+          action: "stop",
+          error: `orphaned Backend at ${orphan.url} (pid=${orphan.pid}); process identity could not be verified for safe termination`,
+          ...backendServiceFailureFields(undefined, "BACKEND_ORPHAN_UNVERIFIED", "verify_orphan"),
+        };
+      }
+      return { ok: true, action: "stop", orphanStopped: true };
+    }
+    return { ok: true, action: "stop", alreadyRunning: false };
+  }
   if (processAlive(state.pid)) {
     const timeoutMs = options.timeoutMs ?? 5000;
     const windowsInstanceId = (runtime.platform ?? process.platform) === "win32"
@@ -592,6 +610,63 @@ type BackendHealthFailure = {
   httpStatus?: number;
   systemCode?: string;
 };
+
+type OrphanBackendInfo = {
+  pid: number;
+  instanceId: string;
+  url: string;
+};
+
+async function probeOrphanBackendUrl(
+  url: string,
+  timeoutMs: number,
+  runtime: BackendServiceRuntime,
+): Promise<OrphanBackendInfo | undefined> {
+  if (!isLoopbackHealthUrl(url)) return undefined;
+  try {
+    const result = await readHealthWithTimeout(
+      new URL("/health", url),
+      Math.max(1, Math.min(timeoutMs, 2000)),
+      runtime.fetch,
+    );
+    if (!result.ok || result.body.service !== "memorax-code-backend") return undefined;
+    const pid = result.body.pid;
+    const instanceId = result.body.instanceId;
+    if (typeof pid !== "number" || !Number.isInteger(pid) || pid <= 0) return undefined;
+    if (typeof instanceId !== "string" || !instanceId.trim()) return undefined;
+    return { pid, instanceId, url };
+  } catch {
+    return undefined;
+  }
+}
+
+async function stopOrphanBackend(
+  orphan: OrphanBackendInfo,
+  timeoutMs: number,
+  runtime: BackendServiceRuntime,
+): Promise<boolean> {
+  const processAlive = runtime.isProcessAlive ?? isProcessAlive;
+  if (!processAlive(orphan.pid)) return true;
+  const probe = runtime.probeProcessCommandLine
+    ? runtime.probeProcessCommandLine(orphan.pid)
+    : probeProcessCommandLine(orphan.pid);
+  if (probe.status !== "ok" || !managedServiceCommandLine(probe.commandLine, orphan.instanceId)) {
+    return false;
+  }
+  const terminated = (runtime.terminateProcessTree ?? terminateProcessTree)(orphan.pid);
+  if (!terminated) return false;
+  await waitUntilStopped(orphan.pid, timeoutMs, processAlive);
+  return !processAlive(orphan.pid);
+}
+
+async function resolveOrphanBackendUrl(options: BackendServiceOptions): Promise<string | undefined> {
+  try {
+    const endpoint = backendServiceEndpoint(options);
+    return endpoint.url;
+  } catch {
+    return undefined;
+  }
+}
 
 async function waitForHealth(
   url: string,
@@ -860,6 +935,7 @@ async function readHealthWithTimeout(
     ok?: boolean;
     service?: string;
     instanceId?: string;
+    pid?: number;
     state?: { sessionHome?: string };
   };
 }> {
@@ -879,12 +955,13 @@ async function readHealthWithTimeout(
     return {
       ok: true,
       httpStatus,
-      body: await response.json() as {
-        ok?: boolean;
-        service?: string;
-        instanceId?: string;
-        state?: { sessionHome?: string };
-      },
+    body: await response.json() as {
+      ok?: boolean;
+      service?: string;
+      instanceId?: string;
+      pid?: number;
+      state?: { sessionHome?: string };
+    },
     };
   } catch (error) {
     throw new BackendHealthProbeError(error, controller.signal.aborted, httpStatus);

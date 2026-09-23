@@ -60,6 +60,7 @@ export type BackendServiceResult = {
   reason?: string;
   state?: BackendServiceState;
   alreadyRunning?: boolean;
+  orphanStopped?: boolean;
   logPath?: string;
   text?: string;
   error?: string;

@@ -54,7 +54,8 @@ async function enableTraeAdapterUnlocked(paths, options) {
   if (stateProblem) return { ...stateProblem, action: "enable" };
   const sourceProblem = validateSources(paths);
   if (sourceProblem) return { ...sourceProblem, action: "enable" };
-  if (existsSync(paths.skillPath) && previousState?.skillPath !== paths.skillPath) {
+  if (existsSync(paths.skillPath) && previousState?.skillPath !== paths.skillPath
+    && !isMemoraxManagedSkill(paths.skillPath)) {
     return conflict("skill_conflict", paths, paths.skillPath);
   }
 
@@ -648,6 +649,10 @@ function skillPackageMetadataCurrent(skillPath, memoraxCodeCommand) {
   } catch {
     return false;
   }
+}
+
+function isMemoraxManagedSkill(skillPath) {
+  return existsSync(join(skillPath, SKILL_PACKAGE_METADATA));
 }
 
 function skillPackageMetadata(memoraxCodeCommand) {

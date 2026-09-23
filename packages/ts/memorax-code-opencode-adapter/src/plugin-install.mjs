@@ -46,7 +46,8 @@ export function ensureOpenCodePluginInstalled(options = {}) {
   const pluginExists = existsSync(paths.pluginPath);
   const pluginIsManaged = previousState?.pluginPath === paths.pluginPath
     && (!pluginExists || isManagedLoader(paths.pluginPath));
-  const skillIsManaged = previousState?.skillPath === paths.skillPath;
+  const skillIsManaged = previousState?.skillPath === paths.skillPath
+    || isMemoraxManagedSkill(paths.skillPath);
   const repoMemoryHelperExists = existsSync(paths.repoMemoryHelperPath);
   const repoMemoryHelperIsManaged = previousState?.repoMemoryHelperPath
     === paths.repoMemoryHelperPath
@@ -648,6 +649,10 @@ function skillPackageMetadata(memoraxCodeCommand) {
     version: 1,
     ...(memoraxCodeCommand ? { memoraxCodeCommand } : {}),
   };
+}
+
+function isMemoraxManagedSkill(skillPath) {
+  return existsSync(join(skillPath, SKILL_PACKAGE_METADATA));
 }
 
 function hasMemoraxCliCommand(directory) {

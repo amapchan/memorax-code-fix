@@ -7,6 +7,7 @@ export function handleHealthRequest(state: BackendState, res: ServerResponse): v
     ok: true,
     service: "memorax-code-backend",
     instanceId: process.env.MEMORAX_CODE_BACKEND_INSTANCE_ID,
+    pid: process.pid,
     authRequired: Boolean(state.authToken),
     security: {
       mode: state.security.mode,
