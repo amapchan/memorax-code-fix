@@ -1116,7 +1116,7 @@ test("setup seeds the default MemoraX Code config around trial memory preference
     const config = await readFile(join(run.memoraxCodeHome, "config.toml"), "utf8");
     assert.match(tomlSectionText(config, "clients"), /^dsh = true(?:\s+#.*)?$/m);
     assert.doesNotMatch(config, /profile\s*=/);
-    assert.doesNotMatch(config, /\[memory\]\s|provider\s*=/);
+    assert.match(config, /\[memory\]\r?\nprovider = "local"/);
     assert.match(config, /\[memory\.retrieval\]/);
     assert.match(config, /enabled = false # Auto-inject retrieved memories into supported client prompts\./);
     assert.match(config, /\[memory\.writeback\]/);
@@ -1145,6 +1145,7 @@ test("setup seeds the default MemoraX Code config around trial memory preference
     assert.deepEqual(activeTomlSections(config), [
       "clients",
       "memorax",
+      "memory",
       "memory.add",
       "memory.repo_update",
       "memory.retrieval",
@@ -1213,7 +1214,7 @@ test("setup detects memory preferences before writing MemoraX config", async () 
     assert.match(config, /\[memory\.add\]\r?\noutput_language = "en" # Language for newly generated MemoraX memories\./);
     assert.match(
       config,
-      /# MemoraX remote-memory connection\.\r?\n\[memorax\]\r?\nendpoint = /,
+      /# MemoraX remote-memory connection\. Only used when provider = "memorax"\.\r?\n\[memorax\]\r?\nendpoint = /,
     );
     assert.match(
       config,
